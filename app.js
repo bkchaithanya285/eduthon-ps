@@ -188,19 +188,27 @@ app.post('/api/team/login', express.urlencoded({ extended: false }), (req, res) 
   // Create new session token, effectively overriding any previous active session for this team
   const sessionToken = generateToken();
   teamSessions.set(teamId, sessionToken);
+  
+  // Persist to DB if available
+  if (db && typeof db.saveSession === 'function') {
+    db.saveSession(teamId, sessionToken).catch(err => console.error('Failed to persist session:', err));
+  }
 
   // Set cookie for the team
   res.setHeader('Set-Cookie', `team_auth=${teamId}:${sessionToken}; Path=/; HttpOnly; SameSite=Lax`);
   return res.redirect('/problem');
 });
 
-app.post('/api/team/logout', (req, res) => {
-  // We simply clear their cookie. We can leave it in the map, OR clear it explicitly if we know who they are.
+app.post('/api/team/logout', async (req, res) => {
+  const teamId = await getTeamAuth(req);
+  if (teamId && db && typeof db.clearSession === 'function') {
+    await db.clearSession(teamId);
+  }
   res.setHeader('Set-Cookie', 'team_auth=; Path=/; HttpOnly; Max-Age=0; SameSite=Lax');
   return res.redirect('/');
 });
 
-function getTeamAuth(req) {
+async function getTeamAuth(req) {
   const cookieHeader = req.headers['cookie'] || '';
   const match = cookieHeader.split(';').find(c => c.trim().startsWith('team_auth='));
   if (!match) return null;
@@ -208,25 +216,29 @@ function getTeamAuth(req) {
   const [teamId, token] = val.split(':');
   if (!teamId || !token) return null;
 
-  // Verify against active session map
-  if (teamSessions.get(teamId) !== token) {
-    return null; // Session invalidated by another device logging in
+  // Verify against active session store (Persistent in MongoDB)
+  if (db && typeof db.verifySession === 'function') {
+    const isValid = await db.verifySession(teamId, token);
+    if (!isValid) return null;
+  } else {
+    // Fallback to in-memory for local/legacy
+    if (teamSessions.get(teamId) !== token) return null;
   }
   return teamId;
 }
 
 // Team Authentication Middleware for API/Pages
-function requireTeamAuth(req, res, next) {
-  if (getTeamAuth(req)) {
+async function requireTeamAuth(req, res, next) {
+  if (await getTeamAuth(req)) {
     return next();
   }
   return res.redirect('/team-login');
 }
 
 // Endpoint to check team profile and global lock status
-app.get('/api/team/me', (req, res) => {
+app.get('/api/team/me', async (req, res) => {
   res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' });
-  const teamId = getTeamAuth(req);
+  const teamId = await getTeamAuth(req);
   if (!teamId) return res.status(401).json({ error: 'Unauthorized' });
 
   // Calculate if unlocked based on timer
@@ -383,7 +395,7 @@ app.post('/api/register', async (req, res) => {
     }
 
     // Authenticate the team and get their identity from the session
-    const teamId = getTeamAuth(req);
+    const teamId = await getTeamAuth(req);
     if (!teamId) {
       return res.status(401).json({ error: 'Session expired or invalid. Please login again.' });
     }

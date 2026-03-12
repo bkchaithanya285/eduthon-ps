@@ -16,11 +16,14 @@ class MongoStore {
     this.db = this.client.db(this.dbName);
     const ps = this.db.collection(`${this.collectionPrefix}problem_statements`);
     const regs = this.db.collection(`${this.collectionPrefix}registrations`);
-    this.collections = { ps, regs };
+    const sessions = this.db.collection(`${this.collectionPrefix}sessions`);
+    this.collections = { ps, regs, sessions };
     // indexes
     await ps.createIndex({ id: 1 }, { unique: true });
     await regs.createIndex({ teamNumber: 1 }, { unique: true });
     await regs.createIndex({ problemStatementId: 1 });
+    await sessions.createIndex({ teamId: 1 }, { unique: true });
+    await sessions.createIndex({ createdAt: 1 }, { expireAfterSeconds: 86400 }); // 24h expiry
     // seed defaults if empty
     const count = await ps.estimatedDocumentCount();
     if (count === 0) {
@@ -275,11 +278,32 @@ class MongoStore {
 
   async resetAll() {
     if (!this.collections) await this.init();
-    const { ps, regs } = this.collections;
+    const { ps, regs, sessions } = this.collections;
     await regs.deleteMany({});
     await ps.deleteMany({});
+    await sessions.deleteMany({});
     await this.init();
     return true;
+  }
+
+  async saveSession(teamId, token) {
+    if (!this.collections) await this.init();
+    await this.collections.sessions.updateOne(
+      { teamId },
+      { $set: { teamId, token, createdAt: new Date() } },
+      { upsert: true }
+    );
+  }
+
+  async verifySession(teamId, token) {
+    if (!this.collections) await this.init();
+    const session = await this.collections.sessions.findOne({ teamId, token });
+    return !!session;
+  }
+
+  async clearSession(teamId) {
+    if (!this.collections) await this.init();
+    await this.collections.sessions.deleteOne({ teamId });
   }
 }
 
