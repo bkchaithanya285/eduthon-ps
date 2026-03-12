@@ -24,15 +24,10 @@ class MongoStore {
     await regs.createIndex({ problemStatementId: 1 });
     await sessions.createIndex({ teamId: 1 }, { unique: true });
     await sessions.createIndex({ createdAt: 1 }, { expireAfterSeconds: 86400 }); // 24h expiry
-    // seed defaults if empty
+    // seed defaults if empty: REMOVED to ensure data.json is the sole source of truth
     const count = await ps.estimatedDocumentCount();
     if (count === 0) {
-      const defaults = [
-        { id: 'ps001', title: 'Secure Authentication System', description: 'Design and implement a multi-factor authentication system with biometric verification, OTP, and secure session management for a banking application.', maxSelections: 2, category: 'Cybersecurity', difficulty: 'Advanced', technologies: ['Node.js', 'React', 'JWT'] },
-        { id: 'ps002', title: 'AI-Powered Code Review Assistant', description: 'Develop an intelligent code review tool that uses machine learning to detect bugs, security vulnerabilities, and suggest improvements in real-time.', maxSelections: 2, category: 'Artificial Intelligence', difficulty: 'Advanced', technologies: ['Python', 'TensorFlow'] },
-        { id: 'ps003', title: 'Blockchain Supply Chain Tracker', description: 'Create a transparent supply chain management system using blockchain technology to track products from manufacturer to consumer.', maxSelections: 2, category: 'Blockchain', difficulty: 'Intermediate', technologies: ['Ethereum', 'Solidity'] }
-      ];
-      await ps.insertMany(defaults);
+      console.log('Database empty. Waiting for JSON seed...');
     }
   }
 
@@ -260,28 +255,34 @@ class MongoStore {
     return { changes: res.deletedCount };
   }
 
-  async importFromJSON(jsonData) {
+   async importFromJSON(jsonData) {
     if (!jsonData || !Array.isArray(jsonData.problemStatements)) return;
     if (!this.collections) await this.init();
     const { ps } = this.collections;
-    const existing = await ps.find({}).project({ id: 1 }).toArray();
-    const existingIds = new Set(existing.map(x => x.id));
-    const toInsert = [];
-    jsonData.problemStatements.forEach(psItem => {
-      if (existingIds.has(psItem.id)) return;
-      const parsedMax = typeof psItem.maxSelections === 'number' ? psItem.maxSelections : parseInt(psItem.maxSelections || '0', 10) || 0;
+    
+    for (const psItem of jsonData.problemStatements) {
+      const parsedMax = typeof psItem.maxSelections === 'number' ? psItem.maxSelections : parseInt(psItem.maxSelections || '0', 10) || 1;
       const maxSel = Math.max(1, parsedMax);
-      toInsert.push({
+      
+      const doc = {
         id: psItem.id,
         title: psItem.title,
         description: psItem.description,
         maxSelections: maxSel,
+        selectedCount: 0,
         category: psItem.category || null,
         difficulty: psItem.difficulty || null,
         technologies: Array.isArray(psItem.technologies) ? psItem.technologies : []
-      });
-    });
-    if (toInsert.length) await ps.insertMany(toInsert);
+      };
+
+      // Upsert to ensure we update existing problem definitions (like maxSelections)
+      await ps.updateOne(
+        { id: psItem.id },
+        { $set: doc },
+        { upsert: true }
+      );
+    }
+    console.log(`Synchronized ${jsonData.problemStatements.length} problem statements from JSON.`);
   }
 
   async resetAll() {

@@ -324,8 +324,7 @@ async function initializeDatabase() {
     const DATA_FILE = path.join(__dirname, 'data.json');
     if (fs.existsSync(DATA_FILE)) {
       const jsonData = JSON.parse(fs.readFileSync(DATA_FILE));
-      const existingProblems = await db.getAllProblemStatements();
-      if (existingProblems.length === 0 && jsonData.problemStatements?.length > 0) {
+      if (jsonData.problemStatements?.length > 0) {
         await db.importFromJSON(jsonData);
       }
     }

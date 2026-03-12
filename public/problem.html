@@ -546,7 +546,11 @@
           fetchProblems();
         } else {
           // --- ROLLBACK ON ERROR ---
-          alert('Sync Failed: ' + (result.error || result.message));
+          if (res.status === 409) {
+            alert('⚠️ Mission Taken! Another team was slightly faster and has already claimed this mission protocol. \n\nPlease select a different mission from the list.');
+          } else {
+            alert('Sync Failed: ' + (result.error || result.message));
+          }
           myRegistration = null;
           problemContainer.style.display = 'block';
           selectionContainer.style.display = 'none';
