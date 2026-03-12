@@ -390,7 +390,7 @@ app.post('/api/register', async (req, res) => {
   try {
     const isTimerUnlocked = globalUnlockTime !== null && Date.now() >= globalUnlockTime;
     if (!problemSelectionUnlocked && !isTimerUnlocked) {
-      return res.status(403).json({ error: 'Hold your horses. Problem selection is currently locked by the Admin.' });
+      return res.status(403).json({ error: 'Selection Locked. Please wait for the mission clock to reach zero or for an Admin to initiate the launch.' });
     }
 
     // Authenticate the team and get their identity from the session

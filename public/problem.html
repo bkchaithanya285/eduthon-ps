@@ -511,6 +511,10 @@
 
     document.getElementById('finalRegisterForm').addEventListener('submit', async (e) => {
       e.preventDefault();
+      if (!isUnlocked) {
+        alert('Mission Protocol Locked: Please wait for the countdown to end or for an Admin to initiate the launch.');
+        return;
+      }
       if (!myTeamId) {
         alert('Identity not synced. Please refresh or login again.');
         return;
