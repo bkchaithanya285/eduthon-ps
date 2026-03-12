@@ -8,6 +8,7 @@ const MongoStore = require('./mongo_store');
 const app = express();
 const PORT = process.env.PORT || 3000;
 let db;
+let dbReadyPromise;
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -55,11 +56,18 @@ function formatProblems(statements) {
 }
 
 // Ensure database is initialized before handling any requests on Vercel
-let dbReadyPromise = null;
 if (process.env.VERCEL) {
-  dbReadyPromise = (async () => { try { await initializeDatabase(); } catch (e) { console.error('DB init failed:', e); } })();
+  dbReadyPromise = (async () => { 
+    try { 
+      if (db) await initializeDatabase(); 
+      else console.error('DB instance not created - check MONGODB_URI');
+    } catch (e) { 
+      console.error('DB init failed:', e); 
+    } 
+  })();
   app.use(async (req, res, next) => {
     try { if (dbReadyPromise) await dbReadyPromise; } catch (_) { }
+    if (!db) return res.status(500).json({ error: 'Database connection not configured (check MONGODB_URI)' });
     next();
   });
 }
@@ -84,8 +92,9 @@ if (process.env.MONGODB_URI) {
   const prefix = process.env.MONGODB_COLLECTION_PREFIX || '';
   db = new MongoStore(uri, dbName, prefix);
 } else {
-  console.error("CRITICAL: MONGODB_URI not found in .env. Application halted.");
-  process.exit(1);
+  console.error("CRITICAL: MONGODB_URI not found in .env.");
+  // Don't exit on Vercel to allow the handler to provide error feedback
+  if (!process.env.VERCEL) process.exit(1);
 }
 
 // Teams CSV (optional auto-fill)
@@ -297,6 +306,7 @@ app.post('/api/admin/toggle-lock', requireAdmin, (req, res) => {
 });
 
 async function initializeDatabase() {
+  if (!db) return;
   try {
     await db.init();
     const DATA_FILE = path.join(__dirname, 'data.json');
@@ -309,7 +319,8 @@ async function initializeDatabase() {
     }
   } catch (error) {
     console.error('CRITICAL: Database initialization failed:', error);
-    process.exit(1);
+    // On serverless, we don't exit; we let the next request retry or fail with status
+    if (!process.env.VERCEL) process.exit(1);
   }
 }
 
