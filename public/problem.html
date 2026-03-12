@@ -394,6 +394,7 @@
       const problemContainer = document.getElementById('problemContainer');
       const loadingState = document.getElementById('loadingState');
       const selectionContainer = document.getElementById('mySelectionContainer');
+      const lockMsg = document.getElementById('lockMessage');
 
       try {
         const res = await fetch('/api/problem-statements');
@@ -417,23 +418,23 @@
         if (myRegistration && myRegistration.problemStatementId) {
             selectionContainer.style.display = 'block';
             problemContainer.style.display = 'none';
+            lockMsg.style.display = 'none';
+            document.getElementById('headerTimerContainer').style.display = 'none';
             renderMySelection(myRegistration.problemStatementId);
         } else {
             selectionContainer.style.display = 'none';
             problemContainer.style.display = 'block';
             renderProblems(allProblems);
+            updateLockUI(); // Ensure lock message shows if not registered
         }
       } catch (e) {
         loadingState.style.display = 'none';
         problemContainer.style.display = 'block';
-        problemContainer.innerHTML = '<div style="text-align:center; color:#dc3545;">Failed to load data. Please check your link.</div>';
+        problemContainer.innerHTML = '<div style="text-align:center; color:#dc3545;">Failed to load data. Please refresh identity.</div>';
       }
     }
 
     function renderMySelection(problemId) {
-        document.getElementById('problemContainer').style.display = 'none';
-        document.getElementById('lockMessage').style.display = 'none';
-        
         const container = document.getElementById('mySelectionContainer');
         const card = document.getElementById('mySelectionCard');
         
@@ -442,15 +443,29 @@
 
         card.className = 'problem-card';
         card.style.borderColor = '#28a745';
+        card.style.background = 'linear-gradient(145deg, #111, #0a0a0a)';
+        card.style.boxShadow = '0 0 30px rgba(40, 167, 69, 0.1)';
+        
         card.innerHTML = `
-          <h2><span style="color:#28a745">✓ Confirmed:</span> ${problem.id} - ${problem.title}</h2>
-          <div class="stats-badge" style="color:#28a745; background:rgba(40, 167, 69, 0.1); border-color: rgba(40, 167, 69, 0.2)">
-            ${problem.category || 'General'}
+          <div style="text-align:center; margin-bottom:30px;">
+            <div style="font-size:3rem; margin-bottom:10px;">🛡️</div>
+            <h1 style="color:#28a745; margin:0; font-size:2rem;">MISSION SECURED</h1>
+            <p style="color:#888; font-weight:bold; letter-spacing:2px;">REGISTRATION COMPLETE</p>
           </div>
-          <p>${problem.description}</p>
-          <div style="margin-top:20px; padding-top:20px; border-top:1px solid #333">
-             <button class="hl-btn" onclick="downloadMissionText('${problem.id}')">💾 Download Mission Details</button>
+
+          <div style="padding:25px; background:rgba(40,167,69,0.05); border:1px solid rgba(40,167,69,0.2); border-radius:12px; margin-bottom:20px;">
+            <h2 style="margin-top:0;">${problem.id}: ${problem.title}</h2>
+            <div class="stats-badge" style="color:#28a745; background:rgba(40, 167, 69, 0.1); border-color: rgba(40,167,69,0.2); margin-bottom:15px;">
+              ${problem.category || 'General Mission'}
+            </div>
+            <p style="color:#ccc; font-size:1.1rem; line-height:1.6;">${problem.description}</p>
           </div>
+
+          <div style="display:flex; gap:15px; flex-wrap:wrap; justify-content:center; margin-top:30px; padding-top:20px; border-top:1px solid #333">
+             <button class="hl-btn" onclick="downloadMissionText('${problem.id}')">💾 Download Mission Doc</button>
+             <button class="hl-btn hl-btn-outline" style="border-color:#555; color:#888;" disabled> Mission Protocol Locked </button>
+          </div>
+          <p style="text-align:center; font-size:0.8rem; color:#555; margin-top:15px;">Target Identity: ${myRegistration.teamName} (${myRegistration.teamNumber})</p>
         `;
         
         container.style.display = 'block';

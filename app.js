@@ -406,6 +406,15 @@ app.post('/api/register', async (req, res) => {
 
     const teamNumber = teamId;
 
+    // Redundant early check for existing registration to save transaction overhead
+    const existing = await db.getRegistrationByTeam(teamNumber);
+    if (existing) {
+      return res.status(409).json({ 
+        error: 'Mission Already Secured', 
+        details: 'You have already successfully claimed a mission protocol. Multiple selections are prohibited.' 
+      });
+    }
+
     // Fetch team details from CSV map or defaults
     const teamData = teamNumberToTeam.get(teamNumber);
     let teamName = teamData ? teamData.teamName : `Team ${teamNumber}`;
