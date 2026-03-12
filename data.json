@@ -1,0 +1,275 @@
+{
+  "problemStatements": [
+    {
+      "id": "ps001",
+      "title": "Smart Classroom Feedback and Teaching Improvement System",
+      "description": "Educational institutions regularly conduct lectures, lab sessions, and training programs for students. However, feedback about teaching quality and classroom experience is often collected through manual surveys at the end of the semester, which limits timely improvements and may not reflect real classroom experiences.\n\nDevelop a digital platform that allows students to provide structured feedback about lectures, teaching methods, and classroom engagement. The system should allow institutions to collect feedback periodically and analyze results through dashboards. Administrators and faculty members should be able to identify areas of improvement and enhance the overall teaching and learning experience.",
+      "maxSelections": 1,
+      "category": null,
+      "difficulty": null,
+      "technologies": []
+    },
+    {
+      "id": "ps002",
+      "title": "Smart Academic Event Participation and Certificate Management System",
+      "description": "Educational institutions frequently organize workshops, seminars, hackathons, technical talks, and training programs for students. However, managing participant registrations, attendance tracking, and certificate distribution for these events is often handled through multiple disconnected tools such as forms, spreadsheets, and manual records. This can lead to confusion in verifying participant data and issuing certificates.\n\nDevelop a digital platform that allows event organizers to manage registrations, track participant attendance, and automatically generate digital certificates for attendees. The system should allow students to maintain a centralized record of all events they have participated in and download verified certificates when needed. This platform should simplify event management while providing students with a reliable digital record of their participation.",
+      "maxSelections": 1,
+      "category": null,
+      "difficulty": null,
+      "technologies": []
+    },
+    {
+      "id": "ps003",
+      "title": "Institutional Event and Resource Management System (IERMS)",
+      "description": "Educational institutions frequently organize academic and extracurricular events such as workshops, seminars, hackathons, conferences, cultural programs, and guest lectures. Managing these events involves coordinating multiple resources including venues, equipment, volunteers, speakers, budgets, and schedules. In many institutions these processes are handled using spreadsheets, emails, or informal communication channels, which often results in scheduling conflicts, miscommunication between departments, and inefficient resource utilization.\n\nDevelop a centralized digital platform that allows institutions to plan, approve, and manage events efficiently. The system should support event registration, venue booking, equipment allocation, volunteer coordination, and task tracking. Administrators should be able to monitor event progress through dashboards while students can discover upcoming events across the campus through a unified platform.",
+      "maxSelections": 1,
+      "category": null,
+      "difficulty": null,
+      "technologies": []
+    },
+    {
+      "id": "ps004",
+      "title": "Centralized Campus Event Discovery Dashboard",
+      "description": "In many colleges and universities, multiple departments and student clubs organize events such as workshops, competitions, seminars, and training sessions throughout the academic year. However, students often miss these opportunities because event information is scattered across different communication channels such as emails, posters, or messaging groups.\n\nCreate a centralized digital dashboard where event coordinators can register events through a structured approval process. The event request should pass through hierarchical approval by faculty members or administrators before being published. Once approved, the event should automatically appear on a campus-wide dashboard where students can view upcoming events, event details, and registration links.",
+      "maxSelections": 1,
+      "category": null,
+      "difficulty": null,
+      "technologies": []
+    },
+    {
+      "id": "ps005",
+      "title": "Secure Digital Certificate Verification System using QR Codes",
+      "description": "Educational institutions and organizations frequently issue certificates for workshops, competitions, internships, and training programs. However, verifying the authenticity of certificates can be difficult because certificates are often shared as simple documents that can be easily forged or modified.\n\nDevelop a digital certificate issuance and verification platform where each certificate contains a unique QR code linked to a secure database. When scanned, the QR code should instantly verify the certificate details and authenticity. The system should allow institutions to generate digital certificates while enabling employers, universities, or organizations to verify them quickly and reliably.",
+      "maxSelections": 1,
+      "category": null,
+      "difficulty": null,
+      "technologies": []
+    },
+    {
+      "id": "ps006",
+      "title": "AI-Based Resume Screening and Candidate Shortlisting Platform",
+      "description": "Recruitment processes often involve reviewing hundreds or even thousands of resumes for a single job opening. Manual screening of resumes is time-consuming and can delay hiring decisions. Recruiters may also overlook suitable candidates due to the overwhelming volume of applications.\n\nDevelop an intelligent platform that analyzes resumes and compares candidate qualifications with job requirements. The system should automatically evaluate skills, experience, and education details to rank applicants according to their relevance to the job role. By automating resume screening, the platform should help recruiters identify suitable candidates faster and streamline the recruitment process.",
+      "maxSelections": 1,
+      "category": null,
+      "difficulty": null,
+      "technologies": []
+    },
+    {
+      "id": "ps007",
+      "title": "Education Loan Guidance and Eligibility Analysis Platform",
+      "description": "Many students who wish to pursue higher education face difficulties understanding available education loan schemes, eligibility requirements, interest rates, and repayment conditions. Information about education loans is often scattered across different bank websites, making it difficult for students to compare options and make informed decisions.\n\nDesign a digital platform that helps students explore and compare education loan schemes offered by different financial institutions. The system should analyze student profiles, academic details, and financial background to recommend suitable loan options. It should also provide clear guidance on eligibility criteria, documentation requirements, and repayment plans.",
+      "maxSelections": 1,
+      "category": null,
+      "difficulty": null,
+      "technologies": []
+    },
+    {
+      "id": "ps008",
+      "title": "Government Scholarship and Financial Aid Discovery Platform",
+      "description": "Students from various economic backgrounds depend on scholarships and financial aid to support their education. However, information about scholarships is often distributed across multiple government portals and institutional websites. Many eligible students miss opportunities because they are unaware of available schemes or cannot easily determine their eligibility.\n\nCreate a centralized platform that aggregates scholarship and financial aid information from different sources. The system should allow students to search and filter opportunities based on criteria such as academic qualifications, income level, and location. By simplifying access to scholarship information, the platform can help more students benefit from financial assistance programs.",
+      "maxSelections": 1,
+      "category": null,
+      "difficulty": null,
+      "technologies": []
+    },
+    {
+      "id": "ps009",
+      "title": "Smart Academic Project and Team Formation Platform",
+      "description": "Students often need to form teams for academic projects, hackathons, and research activities. However, finding suitable teammates with complementary skills can be difficult, especially in large institutions where students from different departments may not know each other.\n\nDesign a digital platform that helps students discover project ideas and form teams based on skills, interests, and academic backgrounds. The system should allow students to create project proposals, invite collaborators, and track project progress. By facilitating better team formation, the platform can encourage collaboration and improve the quality of student projects.",
+      "maxSelections": 1,
+      "category": null,
+      "difficulty": null,
+      "technologies": []
+    },
+    {
+      "id": "ps010",
+      "title": "Digital Public Service Request Tracking System",
+      "description": "Citizens frequently apply for public services such as certificates, licenses, approvals, and service requests through government offices. However, many service requests are processed manually, making it difficult for citizens to know the status of their applications or expected completion time.\n\nDevelop a digital platform that allows citizens to submit service requests and track their progress in real time. Government departments should be able to manage requests through workflow systems, assign tasks to officials, and update status notifications. The platform should improve transparency, accountability, and efficiency in public service delivery.",
+      "maxSelections": 1,
+      "category": null,
+      "difficulty": null,
+      "technologies": []
+    },
+    {
+      "id": "ps011",
+      "title": "Smart Asset Tracking System for Institutions",
+      "description": "Educational institutions manage a wide range of assets such as laboratory equipment, computers, projectors, networking devices, furniture, and other infrastructure resources. In many institutions, asset records are maintained manually or through outdated systems, making it difficult to track the location, usage, and maintenance status of equipment across departments.\n\nDevelop a digital asset management platform that allows institutions to record asset details, track allocation history, and monitor equipment usage in different departments. The system should support maintenance scheduling, repair tracking, and asset lifecycle management. Administrators should also be able to generate reports that help institutions optimize asset utilization and prevent loss or misuse.",
+      "maxSelections": 1,
+      "category": null,
+      "difficulty": null,
+      "technologies": []
+    },
+    {
+      "id": "ps012",
+      "title": "Student Achievement Portfolio and Verification Platform",
+      "description": "Students participate in numerous academic and extracurricular activities such as hackathons, workshops, competitions, internships, and certification programs throughout their academic journey. However, these achievements are often stored as separate certificates or documents that may be difficult to organize and verify when applying for jobs or higher education opportunities.\n\nCreate a digital platform where students can maintain a verified portfolio of their achievements and credentials. Institutions and event organizers should be able to issue digitally verified records that are securely stored in the student's profile. The platform should allow students to share their verified achievements with recruiters, universities, or organizations in a structured and reliable format.",
+      "maxSelections": 1,
+      "category": null,
+      "difficulty": null,
+      "technologies": []
+    },
+    {
+      "id": "ps013",
+      "title": "Smart Complaint and Service Request Management System for Public Offices",
+      "description": "Government offices and public service centers regularly receive requests and complaints from citizens related to services such as documentation, infrastructure maintenance, utilities, and administrative approvals. These requests are often handled through paperwork or manual processes, which can lead to delays and lack of transparency.\n\nDevelop a centralized platform where citizens can submit complaints or service requests through an online interface. Government officials should be able to categorize requests, assign them to relevant departments, and track progress until resolution. Citizens should receive notifications and status updates, ensuring transparency and accountability in public service delivery.",
+      "maxSelections": 1,
+      "category": null,
+      "difficulty": null,
+      "technologies": []
+    },
+    {
+      "id": "ps014",
+      "title": "Public Service Feedback and Rating Platform",
+      "description": "Citizens frequently interact with public services such as transportation systems, healthcare facilities, government offices, and municipal services. However, there are limited platforms where citizens can provide structured feedback about the quality and efficiency of these services.\n\nDesign a digital platform that allows citizens to rate and review public services based on their experiences. Government agencies should be able to analyze feedback trends, identify service issues, and take corrective actions to improve service quality. The system should provide dashboards that help authorities monitor public satisfaction and improve governance.",
+      "maxSelections": 1,
+      "category": null,
+      "difficulty": null,
+      "technologies": []
+    },
+    {
+      "id": "ps015",
+      "title": "Community Volunteer Coordination Platform",
+      "description": "Community initiatives such as environmental campaigns, social awareness programs, and disaster relief efforts often depend on volunteers for successful implementation. However, connecting volunteers with suitable initiatives and coordinating their activities can be difficult without a structured management system.\n\nDevelop a digital platform that allows organizations to register volunteer opportunities and recruit volunteers based on skills and availability. The system should help organizers assign tasks, schedule activities, and communicate with volunteers. By improving coordination, the platform should support more efficient and impactful community initiatives.",
+      "maxSelections": 1,
+      "category": null,
+      "difficulty": null,
+      "technologies": []
+    },
+    {
+      "id": "ps016",
+      "title": "AI-Based Timetable Generation System",
+      "description": "Creating academic timetables for colleges and universities is a complex task that involves balancing multiple constraints such as faculty availability, classroom capacity, course schedules, and student groups. Manual timetable preparation often requires significant time and effort and may still result in scheduling conflicts.\n\nDevelop a system that automatically generates optimized timetables based on predefined constraints and requirements. The platform should allow administrators to input course details, faculty schedules, and classroom availability. Using intelligent algorithms, the system should generate balanced timetables while minimizing scheduling conflicts.",
+      "maxSelections": 1,
+      "category": null,
+      "difficulty": null,
+      "technologies": []
+    },
+    {
+      "id": "ps017",
+      "title": "Smart Curriculum Activity and Attendance Management System",
+      "description": "Educational institutions conduct numerous academic activities such as lectures, lab sessions, workshops, and training programs as part of their curriculum. Tracking student attendance and participation across these activities can be challenging when managed manually or through multiple disconnected systems.\n\nCreate a digital platform that allows instructors to manage curriculum activities and track student attendance efficiently. The system should support digital attendance recording, activity scheduling, and performance tracking. Administrators should be able to generate reports that help evaluate student participation and academic engagement.",
+      "maxSelections": 1,
+      "category": null,
+      "difficulty": null,
+      "technologies": []
+    },
+    {
+      "id": "ps018",
+      "title": "Smart Classroom Utilization and Availability Monitoring System",
+      "description": "Educational institutions have multiple classrooms, seminar halls, and laboratories that are used for lectures, meetings, and academic activities. However, there is often no centralized system to track which rooms are currently occupied or available. This can lead to inefficient use of classroom space and difficulty in quickly identifying free rooms for academic activities or meetings.\n\nDevelop a digital platform that monitors classroom availability and utilization across the campus. The system should allow administrators and faculty members to view real-time classroom usage and schedule room bookings when spaces are available. The platform should also provide analytics on room utilization to help institutions optimize classroom allocation and infrastructure planning.",
+      "maxSelections": 1,
+      "category": null,
+      "difficulty": null,
+      "technologies": []
+    },
+    {
+      "id": "ps019",
+      "title": "Smart Assignment Submission and Deadline Reminder System",
+      "description": "Students are often required to submit multiple assignments and project reports for different courses throughout the semester. Managing these deadlines can be challenging, and students may miss submissions due to lack of proper reminders or organization.\n\nCreate a digital platform that allows instructors to upload assignment details and submission deadlines for their courses. The system should automatically notify students about upcoming deadlines and allow them to submit assignments digitally. Teachers should be able to review submissions and track student progress through a centralized interface.",
+      "maxSelections": 1,
+      "category": null,
+      "difficulty": null,
+      "technologies": []
+    },
+    {
+      "id": "ps020",
+      "title": "Campus Club and Student Organization Management Platform",
+      "description": "Colleges and universities often have multiple student clubs and organizations that conduct activities such as technical events, cultural programs, and social initiatives. Managing membership records, event planning, and communication with members can be challenging without a structured platform.\n\nDevelop a digital system that allows student clubs to manage memberships, announce events, and coordinate activities efficiently.",
+      "maxSelections": 1,
+      "category": null,
+      "difficulty": null,
+      "technologies": []
+    },
+    {
+      "id": "ps021",
+      "title": "Urban Civic Issue Reporting and Repair Tracking System",
+      "description": "Citizens regularly encounter urban infrastructure issues such as potholes, broken streetlights, damaged roads, water leakage, and garbage accumulation. However, reporting these issues to municipal authorities is often complicated and lacks transparency. In many cases, citizens are unaware of whether their complaints have been received or if any action has been taken to resolve them.\n\nDevelop a digital platform that enables citizens to report civic issues by submitting descriptions, images, and location details. Municipal authorities should be able to categorize complaints, assign repair tasks to maintenance teams, and monitor progress through a centralized dashboard. Citizens should receive status updates and notifications so they can track the progress of issue resolution.",
+      "maxSelections": 1,
+      "category": null,
+      "difficulty": null,
+      "technologies": []
+    },
+    {
+      "id": "ps022",
+      "title": "Digital Notice Board and Announcement System for Colleges",
+      "description": "Important announcements such as exam schedules, event notifications, internship opportunities, and administrative updates are often communicated through physical notice boards or scattered online channels. Students may miss important information because announcements are not centralized or easily accessible.\n\nCreate a digital notice board platform where administrators and faculty members can post announcements for students. The system should categorize notices based on departments, events, or academic updates. Students should be able to receive notifications and view announcements through a web or mobile interface.",
+      "maxSelections": 1,
+      "category": null,
+      "difficulty": null,
+      "technologies": []
+    },
+    {
+      "id": "ps023",
+      "title": "Student Doubt Discussion and Peer Learning Platform",
+      "description": "Students frequently face academic doubts while studying outside the classroom. While teachers may not always be available immediately, peers or senior students might be able to help clarify concepts. However, there are limited structured platforms within institutions that support collaborative doubt-solving.\n\nDevelop a platform where students can post academic questions related to their subjects and receive responses from peers, seniors, or faculty members. The system should support discussion threads, upvoting helpful answers, and categorizing questions by subject. This platform should encourage collaborative learning and knowledge sharing among students.",
+      "maxSelections": 1,
+      "category": null,
+      "difficulty": null,
+      "technologies": []
+    },
+    {
+      "id": "ps024",
+      "title": "Smart Classroom Attendance using QR Code",
+      "description": "Tracking student attendance manually during lectures consumes valuable class time and may lead to errors in record keeping. Some institutions still rely on paper-based attendance systems that require additional effort for data entry and record management.\n\nDesign a digital attendance system that allows students to mark attendance by scanning a QR code displayed during the class session. The system should record attendance automatically and store data in a centralized database. Teachers should be able to generate attendance reports and analyze student participation throughout the semester.",
+      "maxSelections": 1,
+      "category": null,
+      "difficulty": null,
+      "technologies": []
+    },
+    {
+      "id": "ps025",
+      "title": "Campus Parking Management and Slot Allocation System",
+      "description": "Many educational institutions face challenges managing vehicle parking for students, faculty, and visitors. Without a structured parking management system, parking areas may become overcrowded, leading to confusion and inefficient space utilization.\n\nDevelop a digital platform that allows institutions to manage parking slots and monitor vehicle entries. Users should be able to view available parking spaces and reserve slots when necessary. The system should also allow administrators to track parking usage and manage visitor parking permissions.",
+      "maxSelections": 1,
+      "category": null,
+      "difficulty": null,
+      "technologies": []
+    },
+    {
+      "id": "ps026",
+      "title": "Student Skill Development Activity Tracking Platform",
+      "description": "Students participate in various skill development activities such as workshops, technical training sessions, competitions, and certification programs. However, institutions often lack a centralized system to track student participation in these activities.\n\nCreate a platform that records student participation in skill development programs and extracurricular activities. The system should allow administrators and faculty members to monitor student involvement and generate reports that highlight skill development progress. This information can help institutions evaluate student engagement and encourage continuous learning.",
+      "maxSelections": 1,
+      "category": null,
+      "difficulty": null,
+      "technologies": []
+    },
+    {
+      "id": "ps027",
+      "title": "Digital Academic Transcript Request and Verification System",
+      "description": "Students often need official academic transcripts for applications to higher education institutions, scholarships, or employment opportunities. The traditional process of requesting transcripts through administrative offices can be time-consuming and may involve manual paperwork.\n\nDevelop a digital system that allows students to request academic transcripts online and track the status of their requests. Institutions should be able to generate digitally verified transcripts that can be shared securely with universities or employers. The platform should ensure authenticity and reduce administrative workload.",
+      "maxSelections": 1,
+      "category": null,
+      "difficulty": null,
+      "technologies": []
+    },
+    {
+      "id": "ps028",
+      "title": "Lost and Found Item Reporting System for Campus",
+      "description": "Students and staff frequently misplace personal items such as ID cards, books, electronic devices, and other belongings on campus. Currently, there may be no centralized system to report lost items or locate found items.\n\nCreate a digital platform where users can report lost or found items within the campus. The system should allow users to upload descriptions and images of items. By matching lost and found reports, the platform can help return items to their rightful owners more efficiently.",
+      "maxSelections": 1,
+      "category": null,
+      "difficulty": null,
+      "technologies": []
+    },
+    {
+      "id": "ps029",
+      "title": "College Canteen Pre-Order and Queue Management System",
+      "description": "During peak hours, college canteens often experience long queues that cause delays and inconvenience for students. Students may spend significant time waiting in line to place or collect their food orders.\n\nDevelop a digital platform that allows students to view the canteen menu and pre-order food before arriving at the counter. The system should manage order queues and notify students when their orders are ready for pickup. This solution can help reduce waiting time and improve the overall canteen service experience.",
+      "maxSelections": 1,
+      "category": null,
+      "difficulty": null,
+      "technologies": []
+    },
+    {
+      "id": "ps030",
+      "title": "Campus Visitor Entry and Pass Management System",
+      "description": "Educational institutions frequently receive visitors such as parents, guest speakers, vendors, and event participants. Managing visitor entries manually through paper registers can lead to security concerns and inefficient record keeping.\n\nDevelop a digital visitor management system that allows institutions to register visitors, generate digital entry passes, and track visitor entry and exit times. The system should help improve campus security while providing administrators with accurate visitor records.",
+      "maxSelections": 1,
+      "category": null,
+      "difficulty": null,
+      "technologies": []
+    }
+  ],
+  "registrations": []
+}

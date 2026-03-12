@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eduthon - Home</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Inter:wght@400;600;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* Page specific styles specific to Home layout */
+    .hero-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      /* Full screen hero */
+      text-align: center;
+      padding: 80px 20px 20px 20px;
+      /* Top padding for fixed navbar */
+    }
+
+    .hero-title {
+      font-size: 5rem;
+      font-weight: 800;
+      margin-bottom: 0px;
+      line-height: 1.1;
+      background: linear-gradient(90deg, #fff 0%, #b0b0b0 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-subtitle {
+      font-size: 2.5rem;
+      color: var(--primary-orange);
+      margin-top: 10px;
+      margin-bottom: 40px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      text-shadow: 0 0 20px rgba(255, 107, 0, 0.3);
+    }
+
+    .hero-desc {
+      max-width: 700px;
+      margin-bottom: 40px;
+      font-size: 1.2rem;
+      line-height: 1.6;
+      color: #ddd;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 24px;
+      width: 100%;
+      max-width: 900px;
+      margin-top: 60px;
+    }
+
+    .info-item {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 24px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: 0.3s;
+    }
+
+    .info-item:hover {
+      border-color: var(--primary-orange);
+      transform: translateY(-5px);
+      box-shadow: 0 5px 15px rgba(255, 107, 0, 0.15);
+    }
+
+    .info-label {
+      color: var(--primary-orange);
+      font-weight: 700;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .info-value {
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+      .hero-title {
+        font-size: 3rem;
+      }
+
+      .hero-subtitle {
+        font-size: 1.5rem;
+      }
+
+      .info-grid {
+        gap: 16px;
+        margin-top: 40px;
+      }
+    }
+
+    /* EVALUATION CRITERIA MODAL OVERRIDES */
+    .cyber-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(5px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .cyber-modal.active {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    .cyber-modal-content {
+      background: #181818;
+      border: 1px solid var(--primary-orange);
+      border-radius: 16px;
+      padding: 30px;
+      color: white;
+      max-width: 90vw;
+      width: 800px;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+
+    .criteria-section {
+      margin-bottom: 24px;
+      background: #222;
+      padding: 20px;
+      border-radius: 8px;
+      border-left: 4px solid var(--primary-orange);
+    }
+
+    .criteria-section h3 {
+      color: var(--primary-orange);
+      font-size: 1.3rem;
+    }
+
+    .criteria-item {
+      background: #2a2a2a;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .criteria-weight {
+      background: var(--primary-orange);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: bold;
+      height: fit-content;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="logo-bar">
+    <div class="logo-left">
+      <span class="logo-text" style="margin-left:5px;">EDUTHON</span>
+    </div>
+    <div class="logo-right">
+      <img src="ieee_club_logo.png" alt="IEEE Club Logo" class="logo-img" />
+    </div>
+  </div>
+
+  <div class="hero-section">
+    <h1 class="hero-title">EDU<span class="text-orange">THON</span></h1>
+    <div class="hero-subtitle">EDU TECH HACK SERIES</div>
+
+    <p class="hero-desc">
+      Push the boundaries of technology. Build the future. Compete with the best minds in cybersecurity, AI, and
+      blockchain innovation.
+    </p>
+
+    <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+      <button class="hl-btn" onclick="window.location.href='team-login'">START MISSION</button>
+      <button class="hl-btn hl-btn-outline" id="evaluationCriteriaBtn">📋 EVALUATION CRITERIA</button>
+    </div>
+
+    <div class="info-grid">
+      <div class="info-item">
+        <div class="info-label">DATE</div>
+        <div class="info-value">Mar 13 - 14</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">DURATION</div>
+        <div class="info-value">24 Hours</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">PRIZE POOL</div>
+        <div class="info-value">₹7,000</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Evaluation Criteria Modal -->
+  <div class="cyber-modal" id="evaluationModal">
+    <div class="cyber-modal-content">
+      <div id="evaluationModalContent"></div>
+      <div style="margin-top: 20px; text-align: right;">
+        <button class="hl-btn" id="evaluationModalClose">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    &copy; Eduthon &mdash; IEEE Education Society
+  </footer>
+
+  <script src="js/main.js"></script>
+
+  <script>
+    async function fetchEvaluationCriteria() {
+      try {
+        const res = await fetch('/api/evaluation-criteria', { cache: 'no-store' });
+        return await res.json();
+      } catch (error) {
+        console.error('Error fetching evaluation criteria:', error);
+        return null;
+      }
+    }
+
+    function renderEvaluationCriteria(criteria) {
+      if (!criteria) return '<p>Evaluation criteria not available.</p>';
+
+      let html = '<h2 class="text-center text-orange" style="margin-bottom:30px;">Evaluation Criteria</h2>';
+
+      if (criteria.technicalRequirements) {
+        html += `
+          <div class="criteria-section">
+            <h3>${criteria.technicalRequirements.title}</h3>
+            <ul style="padding-left: 20px; margin-top: 10px; color: #ddd;">
+              ${criteria.technicalRequirements.requirements.map(req => `<li style="margin-bottom:8px">${req}</li>`).join('')}
+            </ul>
+          </div>
+        `;
+      }
+
+      if (criteria.judgingRubric) {
+        if (criteria.judgingRubric.round1) {
+          html += `<h3 class="mt-4 mb-4" style="border-bottom:1px solid #333; padding-bottom:10px;">${criteria.judgingRubric.round1.title}</h3>`;
+          html += criteria.judgingRubric.round1.criteria.map(c => `
+            <div class="criteria-item">
+              <div>
+                <div style="color:var(--primary-orange); font-weight:bold; font-size:1.1rem;">${c.name}</div>
+                <div style="color:#aaa; font-size:0.95rem; margin-top:4px;">${c.description}</div>
+              </div>
+              <div class="criteria-weight">${c.weight}</div>
+            </div>
+          `).join('');
+        }
+        if (criteria.judgingRubric.round2) {
+          html += `<h3 class="mt-4 mb-4" style="border-bottom:1px solid #333; padding-bottom:10px;">${criteria.judgingRubric.round2.title}</h3>`;
+          html += criteria.judgingRubric.round2.criteria.map(c => `
+            <div class="criteria-item">
+              <div>
+                <div style="color:var(--primary-orange); font-weight:bold; font-size:1.1rem;">${c.name}</div>
+                <div style="color:#aaa; font-size:0.95rem; margin-top:4px;">${c.description}</div>
+              </div>
+              <div class="criteria-weight">${c.weight}</div>
+            </div>
+          `).join('');
+        }
+      }
+      return html;
+    }
+
+    function showEvaluationCriteriaModal() {
+      const modal = document.getElementById('evaluationModal');
+      const content = document.getElementById('evaluationModalContent');
+      content.innerHTML = '<div style="text-align:center; padding:40px;">Loading...</div>';
+      modal.classList.add('active');
+
+      fetchEvaluationCriteria().then(criteria => {
+        content.innerHTML = renderEvaluationCriteria(criteria);
+      }).catch(() => {
+        content.innerHTML = '<p class="text-center text-orange">Error loading criteria.</p>';
+      });
+    }
+
+    document.getElementById('evaluationCriteriaBtn').addEventListener('click', showEvaluationCriteriaModal);
+    document.getElementById('evaluationModalClose').addEventListener('click', () => {
+      document.getElementById('evaluationModal').classList.remove('active');
+    });
+    document.getElementById('evaluationModal').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) e.currentTarget.classList.remove('active');
+    });
+  </script>
+  <a href="/admin-login"
+    style="position:fixed; bottom:20px; right:20px; opacity:0.3; color:white; font-size:0.8rem; z-index:9999; text-decoration:none; border:1px solid #444; padding:5px 10px; border-radius:4px; transition:0.3s;"
+    onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.3'">Admin</a>
+</body>
+
+</html>

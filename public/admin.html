@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Launch Control - Eduthon</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Inter:wght@400;600;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Admin Specific Overrides */
+        body {
+            background: var(--secondary-dark);
+        }
+
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .login-box {
+            background: var(--bg-card);
+            border: 1px solid var(--primary-orange);
+            padding: 40px;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+        }
+
+        .admin-content {
+            display: none;
+            padding: 20px;
+        }
+
+        .admin-content.show {
+            display: block;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: #222;
+            padding: 24px;
+            border-radius: 12px;
+            text-align: center;
+            border-bottom: 2px solid var(--primary-orange);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: white;
+        }
+
+        .stat-label {
+            color: #888;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #1a1a1a;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .data-table th,
+        .data-table td {
+            text-align: left;
+            padding: 16px;
+            border-bottom: 1px solid #333;
+        }
+
+        .data-table th {
+            background: #111;
+            color: var(--primary-orange);
+            font-weight: 700;
+        }
+
+        .data-table tr:hover {
+            background: #222;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.85rem;
+        }
+
+        .refresh-bar {
+            background: #111;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            color: #888;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Login Form -->
+    <div class="login-container" id="loginContainer">
+        <div class="login-box">
+            <h2 class="text-center text-orange" style="margin-bottom:30px;">LAUNCH CONTROL</h2>
+            <form id="loginForm">
+                <div class="mb-4">
+                    <label style="display:block; margin-bottom:8px; color:#aaa;">Command Code</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="mb-4">
+                    <label style="display:block; margin-bottom:8px; color:#aaa;">Access Key</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit" class="hl-btn" style="width:100%;">Authenticate</button>
+                <div id="errorMessage" style="color:#dc3545; text-align:center; margin-top:16px;"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div class="admin-content" id="adminContent">
+        <div style="max-width:1400px; margin:0 auto;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
+                <h1>EDU <span class="text-orange">THON</span></h1>
+                <div
+                    style="display:flex; align-items:center; gap:15px; background:#1a1a1a; padding:10px 20px; border-radius:12px; border:1px solid #333;">
+                    <div style="color:var(--primary-orange); font-size:0.9rem; font-weight:bold;">RELEASE TIMER:</div>
+                    <input type="number" id="timerMinutes" placeholder="Minutes" title="Minutes to delay"
+                        style="width:100px; padding:6px; background:#222; border:1px solid #444; color:white; border-radius:4px;">
+                    <button id="setTimerBtn" class="hl-btn btn-sm" onclick="setTimer()">Schedule Launch</button>
+                    <button id="lockToggleBtn" class="hl-btn"
+                        style="background:#28a745; padding:6px 12px; margin-left:10px; border-color:#28a745;" onclick="launchImmediately()">Launch Immediately</button>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <button class="hl-btn hl-btn-outline btn-sm" style="border-color:#dc3545; color:#dc3545;" onclick="relaunchEvent()">Relaunch Event</button>
+                    <button class="hl-btn hl-btn-outline btn-sm" onclick="logout()">Logout</button>
+                </div>
+            </div>
+
+            <div class="refresh-bar">
+                <span>Last Updated: <span id="updateTime" style="color:white;">-</span></span>
+                <div>
+                    <span id="realtimeStatus" style="margin-right:15px; color:#dc3545;">📡 Connecting...</span>
+                    <button class="hl-btn btn-sm" onclick="refreshData()">Refresh Data</button>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalProblems">-</div>
+                    <div class="stat-label">Total Missions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalRegistrations">-</div>
+                    <div class="stat-label">Active Teams</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="availableProblems">-</div>
+                    <div class="stat-label">Open Missions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="fullProblems">-</div>
+                    <div class="stat-label">Full Missions</div>
+                </div>
+            </div>
+
+            <div class="hl-card mb-4">
+                <h3 class="text-orange" style="display:flex; justify-content:space-between; align-items:center;">
+                    Confirmed Registrations
+                    <div>
+                        <button class="hl-btn hl-btn-outline btn-sm"
+                            onclick="exportData('registrations', 'csv')">CSV</button>
+                        <button class="hl-btn hl-btn-outline btn-sm"
+                            onclick="exportData('registrations', 'pdf')">PDF</button>
+                    </div>
+                </h3>
+                <div style="overflow-x:auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Team #</th>
+                                <th>Name</th>
+                                <th>Leader</th>
+                                <th>Mission</th>
+                                <th>Time</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="registrationsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="hl-card">
+                <h3 class="text-orange" style="display:flex; justify-content:space-between; align-items:center;">
+                    Mission Status
+                    <div>
+                        <button class="hl-btn hl-btn-outline btn-sm"
+                            onclick="exportData('problem-statements', 'csv')">CSV</button>
+                    </div>
+                </h3>
+                <div style="overflow-x:auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Title</th>
+                                <th>Capacity</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="problemsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="mt-4 text-center">
+                <button class="hl-btn btn-sm" style="background:#dc3545;" onclick="replaceFromDataFile()">⚠️ Reset
+                    Database from JSON</button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            checkSession();
+        });
+
+        async function checkSession() {
+            try {
+                const res = await fetch('/api/admin/status', { credentials: 'same-origin' });
+                const data = await res.json();
+                if (data && data.authenticated) {
+                    showDashboard();
+                } else {
+                    document.getElementById('loginContainer').style.display = 'flex';
+                }
+            } catch (e) {
+                document.getElementById('loginContainer').style.display = 'flex';
+            }
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new URLSearchParams(new FormData(e.target));
+            const res = await fetch('/api/admin/login', {
+                method: 'POST',
+                body: formData,
+                credentials: 'same-origin'
+            });
+
+            if (res.redirected || res.ok) {
+                checkSession();
+            } else {
+                document.getElementById('errorMessage').innerText = 'Invalid Credentials';
+            }
+        });
+
+        let currentLockStatus = false;
+        let countdownInterval = null;
+
+        function showDashboard() {
+            document.getElementById('loginContainer').style.display = 'none';
+            document.getElementById('adminContent').classList.add('show');
+            refreshData();
+            connectSocket();
+            fetchLockStatus();
+        }
+
+        async function fetchLockStatus() {
+            try {
+                const res = await fetch('/api/admin/status', { credentials: 'same-origin' });
+                const data = await res.json();
+                // Admin status doesn't yet serve unlockTime statically, but we can just ask team/me or rely on SSE.
+                // We'll rely on the manual toggle for immediate response.
+                updateLockToggleUI(data.selectionUnlocked);
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function setTimer() {
+            const mins = parseFloat(document.getElementById('timerMinutes').value);
+            if (!mins || mins <= 0) return alert('Enter a valid positive number of minutes.');
+
+            const targetMs = Date.now() + Math.floor(mins * 60 * 1000);
+            document.getElementById('setTimerBtn').disabled = true;
+
+            try {
+                const res = await fetch('/api/admin/set-timer', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ unlockTimeMs: targetMs }),
+                    credentials: 'same-origin'
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    updateLockToggleUI(data.selectionUnlocked, data.unlockTime);
+                }
+            } catch (err) {
+                console.error(err);
+            } finally {
+                document.getElementById('setTimerBtn').disabled = false;
+            }
+        }
+
+        async function launchImmediately() {
+            try {
+                const res = await fetch('/api/admin/set-timer', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ unlockTimeMs: 0 }), // 0 means unlock immediately
+                    credentials: 'same-origin'
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    updateLockToggleUI(data.selectionUnlocked, data.unlockTime);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function updateLockToggleUI(unlocked, unlockTime = null) {
+            currentLockStatus = unlocked;
+            const btn = document.getElementById('lockToggleBtn');
+            const timerBtn = document.getElementById('setTimerBtn');
+
+            clearInterval(countdownInterval);
+
+            if (unlockTime && Date.now() < unlockTime) {
+                btn.innerText = 'Launch Immediately';
+                btn.style.background = '#28a745';
+                btn.style.borderColor = '#28a745';
+
+                // Start a local countdown on the timer button
+                countdownInterval = setInterval(() => {
+                    const remaining = Math.max(0, unlockTime - Date.now());
+                    if (remaining === 0) {
+                        clearInterval(countdownInterval);
+                        timerBtn.innerText = 'Schedule Launch';
+                        timerBtn.style.background = '';
+                        updateLockToggleUI(true, null);
+                    } else {
+                        const m = Math.floor(remaining / 60000);
+                        const s = Math.floor((remaining % 60000) / 1000);
+                        timerBtn.innerText = `Releasing in ${m}:${s.toString().padStart(2, '0')}`;
+                        timerBtn.style.background = '#ff6b00';
+                    }
+                }, 1000);
+
+            } else if (unlocked) {
+                btn.innerText = 'Launched';
+                btn.style.background = '#555';
+                btn.style.borderColor = '#555';
+                btn.disabled = true;
+                timerBtn.innerText = 'Schedule Launch';
+                timerBtn.style.background = '';
+                timerBtn.disabled = true;
+                document.getElementById('timerMinutes').disabled = true;
+            } else {
+                btn.innerText = 'Launch Immediately';
+                btn.style.background = '#28a745';
+                btn.style.borderColor = '#28a745';
+                btn.disabled = false;
+                timerBtn.innerText = 'Schedule Launch';
+                timerBtn.style.background = '';
+                timerBtn.disabled = false;
+                document.getElementById('timerMinutes').disabled = false;
+            }
+        }
+
+        async function logout() {
+            await fetch('/api/admin/logout', { method: 'POST', credentials: 'same-origin' });
+            window.location.reload();
+        }
+
+        async function refreshData() {
+            try {
+                const respProbs = await fetch('/api/problem-statements', { credentials: 'same-origin' });
+                const probs = respProbs.ok ? await respProbs.json() : [];
+
+                const respRegs = await fetch('/api/registrations', { credentials: 'same-origin' });
+                if (!respRegs.ok) {
+                    // Not authorized or other error: show login
+                    document.getElementById('loginContainer').style.display = 'flex';
+                    document.getElementById('adminContent').classList.remove('show');
+                    return;
+                }
+                const regs = await respRegs.json();
+
+                updateStats(probs, regs);
+                renderProblems(probs);
+                renderRegistrations(regs);
+
+                document.getElementById('updateTime').innerText = new Date().toLocaleTimeString();
+                fetchLockStatus(); 
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function updateStats(probs, regs) {
+            const available = probs.filter(p => p.isAvailable).length;
+            document.getElementById('totalProblems').innerText = probs.length;
+            document.getElementById('totalRegistrations').innerText = regs.length;
+            document.getElementById('availableProblems').innerText = available;
+            document.getElementById('fullProblems').innerText = probs.length - available;
+        }
+
+        function renderRegistrations(regs) {
+            const tbody = document.getElementById('registrationsBody');
+            if (regs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center" style="padding:20px; color:#666;">No registrations yet.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = regs.map(r => `
+                <tr>
+                    <td>${r.team_number}</td>
+                    <td>${r.team_name}</td>
+                    <td>${r.team_leader}</td>
+                    <td>${r.problem_title || 'Unknown'}</td>
+                    <td>${new Date(r.registration_date_time).toLocaleString()}</td>
+                    <td><button class="hl-btn btn-sm" style="background:#dc3545;" onclick="deleteReg('${r.team_number}')">Delete</button></td>
+                </tr>
+            `).join('');
+        }
+
+        function renderProblems(probs) {
+            const tbody = document.getElementById('problemsBody');
+            tbody.innerHTML = probs.map(p => `
+                <tr>
+                    <td>${p.id}</td>
+                    <td>${p.title}</td>
+                    <td>${p.selectedCount} / ${p.maxSelections}</td>
+                    <td style="color:${p.isAvailable ? '#28a745' : '#dc3545'}; font-weight:bold;">
+                        ${p.isAvailable ? 'OPEN' : 'FULL'}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function deleteReg(id) {
+            if (confirm('Abort mission for team ' + id + '?')) {
+                await fetch('/api/registration/' + id, { method: 'DELETE', credentials: 'same-origin' });
+                refreshData();
+            }
+        }
+
+        function exportData(type, fmt) {
+            window.open('/api/export/' + type + '/' + fmt, '_blank');
+        }
+
+        async function relaunchEvent() {
+            if (confirm('CRITICAL WARN: This will PERMANENTLY delete all current team registrations and reset the system for a fresh start. Proceed?')) {
+                const res = await fetch('/api/admin/replace-with-data-file', { method: 'POST', credentials: 'same-origin' });
+                if (res.ok) {
+                    alert('System Relaunched Successfully. All registrations cleared.');
+                    refreshData();
+                    fetchLockStatus(); // This will refresh the lock UI
+                }
+            }
+        }
+
+        async function replaceFromDataFile() {
+            if (confirm('Reset database missions from JSON? (This also clears registrations)')) {
+                await fetch('/api/admin/replace-with-data-file', { method: 'POST', credentials: 'same-origin' });
+                refreshData();
+            }
+        }
+
+        function connectSocket() {
+            const es = new EventSource('/api/events');
+            es.onopen = () => document.getElementById('realtimeStatus').innerHTML = '<span style="color:#28a745;">🟢 Live Link Active</span>';
+            es.onmessage = (e) => {
+                try {
+                    const d = JSON.parse(e.data);
+                    if (d.type === 'lock_status') {
+                        updateLockToggleUI(d.data.selectionUnlocked, d.data.unlockTime);
+                    } else if (d.type !== 'heartbeat') {
+                        refreshData();
+                    }
+                } catch (x) { }
+            }
+        }
+    </script>
+</body>
+
+</html>

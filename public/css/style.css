@@ -1,0 +1,216 @@
+/* Eduthon - Global Styles (Orange Aesthetic) */
+:root {
+    --primary-orange: #ff6b00;
+    --primary-orange-hover: #e65100;
+    --secondary-dark: #121212;
+    --bg-dark: #0f0f0f;
+    --bg-card: #181818;
+    --text-white: #ffffff;
+    --text-gray: #b0b0b0;
+    --accent-glow: rgba(255, 107, 0, 0.4);
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body {
+    background: linear-gradient(135deg, var(--bg-dark), #1a1a1a);
+    color: var(--text-white);
+    font-family: 'Inter', 'Roboto', sans-serif;
+    margin: 0;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* Typography */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    margin: 0 0 16px 0;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+h1 {
+    font-size: 3rem;
+}
+
+h2 {
+    font-size: 2rem;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+    transition: color 0.2s;
+}
+
+/* Buttons */
+.hl-btn {
+    background: var(--primary-orange);
+    color: #fff;
+    border: none;
+    padding: 12px 32px;
+    font-size: 1.1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px var(--accent-glow);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.hl-btn:hover {
+    background: var(--primary-orange-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 107, 0, 0.6);
+}
+
+.hl-btn:disabled {
+    background: #333;
+    color: #666;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+/* Secondary Button (Outline) */
+.hl-btn-outline {
+    background: transparent;
+    border: 2px solid var(--primary-orange);
+    color: var(--primary-orange);
+}
+
+.hl-btn-outline:hover {
+    background: var(--primary-orange);
+    color: #fff;
+}
+
+/* Cards */
+.hl-card {
+    background: var(--bg-card);
+    border: 1px solid #333;
+    border-radius: 16px;
+    padding: 32px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.hl-card:hover {
+    border-color: var(--primary-orange);
+    box-shadow: 0 0 20px rgba(255, 107, 0, 0.1);
+    transform: translateY(-4px);
+}
+
+/* Input Fields */
+input[type="text"],
+input[type="password"],
+textarea {
+    width: 100%;
+    padding: 14px 18px;
+    background: #222;
+    border: 1px solid #444;
+    border-radius: 8px;
+    color: white;
+    font-size: 1rem;
+    transition: all 0.2s;
+    outline: none;
+}
+
+input:focus {
+    border-color: var(--primary-orange);
+    box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.2);
+}
+
+/* Navbar / Logo Bar */
+.logo-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2px 40px;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(5px);
+    position: fixed;
+    top: 0;
+    z-index: 100;
+    border-bottom: 5px solid rgba(255, 255, 255, 0.05);
+}
+
+.logo-left,
+.logo-right {
+    display: flex;
+    align-items: center;
+}
+
+.logo-img {
+    height: 60px;
+    width: auto;
+    object-fit: contain;
+}
+
+.logo-text {
+    font-weight: 800;
+    font-size: 1.5rem;
+    color: white;
+    letter-spacing: 1px;
+    margin-left: 15px;
+}
+
+/* Footer */
+.site-footer {
+    text-align: center;
+    padding: 32px;
+    margin-top: 40px;
+    font-size: 0.9rem;
+    color: var(--text-gray);
+    border-top: 1px solid #222;
+}
+
+/* Utility */
+.text-orange {
+    color: var(--primary-orange);
+}
+
+.text-center {
+    text-align: center;
+}
+
+.mt-4 {
+    margin-top: 1.5rem;
+}
+
+.mb-4 {
+    margin-bottom: 1.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .logo-bar {
+        padding: 12px 20px;
+    }
+
+    .logo-img {
+        height: 40px;
+    }
+
+    .logo-text {
+        font-size: 1rem;
+    }
+
+    h1 {
+        font-size: 2.2rem;
+    }
+
+    .hl-card {
+        padding: 20px;
+    }
+}

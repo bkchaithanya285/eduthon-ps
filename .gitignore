@@ -1,0 +1,7 @@
+node_modules/
+.env
+*.log
+cookie.txt
+debug_server.log
+crash.log
+admin_debug.log

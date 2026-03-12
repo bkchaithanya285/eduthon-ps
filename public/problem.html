@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eduthon - Missions</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Inter:wght@400;600;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* Page specific overrides for Problem Selection */
+    .back-btn {
+      position: fixed;
+      top: 100px;
+      left: 32px;
+      z-index: 90;
+      background: var(--bg-card);
+      color: #fff;
+      border: 1px solid var(--primary-orange);
+      border-radius: 8px;
+      font-weight: 700;
+      padding: 10px 24px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      transition: 0.3s;
+    }
+
+    .back-btn:hover {
+      background: var(--primary-orange);
+      color: #fff;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 80px auto 40px auto;
+      /* More top margin for fixed header */
+      padding: 0 20px;
+    }
+
+    .problem-header {
+      text-align: center;
+    }
+
+    .problem-title {
+      font-size: 3.5rem;
+      font-weight: 800;
+      background: linear-gradient(90deg, var(--primary-orange), #fff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 20px;
+    }
+
+    .problem-note {
+      background: rgba(255, 107, 0, 0.05);
+      border: 1px solid var(--primary-orange);
+      border-radius: 12px;
+      padding: 24px;
+      margin: 0 auto 40px auto;
+      max-width: 900px;
+      color: #ddd;
+    }
+
+    .problem-list {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .problem-card {
+      background: var(--bg-card);
+      border: 1px solid #333;
+      border-radius: 16px;
+      padding: 32px;
+      position: relative;
+      transition: 0.3s;
+    }
+
+    .problem-card:hover {
+      border-color: var(--primary-orange);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .problem-card h2 {
+      color: var(--primary-orange);
+      font-size: 1.5rem;
+      margin-bottom: 12px;
+    }
+
+    .problem-card p {
+      color: #ccc;
+      line-height: 1.6;
+      margin-bottom: 20px;
+      white-space: pre-line;
+    }
+
+    .stats-badge {
+      display: inline-block;
+      background: rgba(255, 107, 0, 0.1);
+      color: var(--primary-orange);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 16px;
+      border: 1px solid rgba(255, 107, 0, 0.2);
+    }
+
+    /* Full State */
+    .problem-card.full {
+      opacity: 0.6;
+      border-color: #444;
+      background: #1a1a1a;
+    }
+
+    .problem-card.full h2 {
+      color: #666;
+      text-decoration: line-through;
+    }
+
+    .problem-card.full::after {
+      content: "FULL";
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: #dc3545;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-weight: bold;
+      font-size: 0.8rem;
+    }
+
+    /* Registration Form */
+    .reg-form {
+      background: #222;
+      padding: 24px;
+      border-radius: 12px;
+      margin-top: 20px;
+      display: none;
+      /* Hidden by default */
+      border: 1px solid #444;
+    }
+
+    .reg-form.active {
+      display: block;
+      animation: fadeIn 0.3s;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Modal overrides */
+    .cyber-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .cyber-modal.active {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    .cyber-modal-content {
+      background: #181818;
+      border: 1px solid var(--primary-orange);
+      border-radius: 16px;
+      padding: 40px;
+      max-width: 500px;
+      width: 90%;
+    }
+
+    @media (max-width: 768px) {
+      .problem-title {
+        font-size: 2.5rem;
+      }
+
+      .back-btn {
+        top: 16px;
+        left: 16px;
+        padding: 8px 16px;
+        font-size: 0.9rem;
+      }
+
+      .container {
+        margin-top: 80px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="logo-bar" style="background: rgba(15, 15, 15, 0.95); border-bottom: 2px solid var(--primary-orange);">
+    <div class="logo-left">
+      <span class="logo-text"
+        style="font-weight:800; color:white; font-size:1.5rem; margin-left:15px; letter-spacing:1px;">EDUTHON</span>
+      
+      <!-- Sticky Release Timer -->
+      <div id="headerReleaseTimerContainer" style="margin-left: 20px; display: none; align-items: center; gap: 8px; background: rgba(255,107,0,0.1); padding: 5px 15px; border-radius: 20px; border: 1px solid rgba(255,107,0,0.3);">
+        <span style="font-size: 0.7rem; color: #888; text-transform: uppercase; font-weight: 800;">Releasing In:</span>
+        <span id="headerReleaseTimer" style="font-family: 'Roboto Mono', monospace; font-size: 1.2rem; color: var(--primary-orange); font-weight: 900; letter-spacing: 2px;">00:00</span>
+      </div>
+    </div>
+    
+    <!-- Welcome Message Center -->
+    <div id="welcomeContainer" style="color: white; font-weight: 700; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px;">
+      <span style="color: #888;">WELCOME,</span> <span id="headerTeamName" style="color: var(--primary-orange);">IDENTIFYING...</span>
+    </div>
+
+    <div class="logo-right">
+      <img src="ieee_club_logo.png" alt="IEEE Club Logo" class="logo-img" />
+    </div>
+  </div>
+
+  <button class="back-btn" onclick="window.location.href='/'">&#8592; Back to HQ</button>
+
+  <div class="container">
+    <div class="problem-header">
+      <h1 class="problem-title">SELECT MISSION</h1>
+      <p style="color: #888; margin-bottom: 30px;">Choose wisely. Once registered, changing protocols requires admin
+        intervention.</p>
+    </div>
+
+    <div class="problem-note">
+      <h3 style="color:var(--primary-orange); margin-bottom:10px;">⚠️ Protocol Notice</h3>
+      <ul style="padding-left: 20px; margin: 0;">
+        <li>Each team can select only ONE problem statement.</li>
+        <li>Slots are limited. First come, first served.</li>
+        <li>Ensure you have your Team details ready before confirming.</li>
+      </ul>
+    </div>
+
+    <!-- Container for problems -->
+    <div id="lockMessage"
+      style="text-align:center; padding:20px; color:#ff6b00; font-size:1.5rem; font-weight:bold; display:none; background:rgba(255,107,0,0.1); border:1px solid #ff6b00; border-radius:12px; margin-bottom:20px;">
+      <div id="lockText">⏳ Waiting for Admin to release problem statements...</div>
+      <div id="countdownTimer"
+        style="font-size:3rem; font-weight:900; letter-spacing:4px; margin-top:10px; color:white; font-family:'Roboto Mono', monospace;">
+      </div>
+    </div>
+
+    <!-- Container for my selected problem -->
+    <div id="mySelectionContainer" class="problem-list" style="display:none; margin-bottom: 40px;">
+      <h2 style="color:white; text-align:center; margin-bottom:20px;">Your Confirmed Mission</h2>
+      <div id="mySelectionCard"></div>
+    </div>
+
+    <div id="problemContainer" class="problem-list" style="display:none;">
+    </div>
+    
+    <div id="loadingState" style="text-align:center; padding:100px; color:#666;">
+        <div style="font-size:2rem; margin-bottom:10px;">📡</div>
+        <p>Syncing encrypted protocols...</p>
+    </div>
+
+  </div>
+
+  <!-- Registration Modal -->
+  <div class="cyber-modal" id="regModal">
+    <div class="cyber-modal-content">
+      <div style="background: rgba(255,107,0,0.1); border: 1px solid rgba(255,107,0,0.3); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+        <div style="color: #888; font-size: 0.8rem; text-transform: uppercase;">Registering Identity</div>
+        <div id="modalTeamId" style="color: white; font-size: 1.2rem; font-weight: bold; margin-bottom: 10px;"></div>
+        
+        <div style="color: #888; font-size: 0.8rem; text-transform: uppercase;">Selected Mission</div>
+        <div id="modalProblemTitle" style="color: var(--primary-orange); font-size: 1.1rem; font-weight: bold;"></div>
+      </div>
+
+      <form id="finalRegisterForm">
+        <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:10px;">
+          <button type="button" class="hl-btn hl-btn-outline" style="padding:10px 20px;"
+            onclick="closeModal()">Cancel</button>
+          <button type="submit" class="hl-btn" id="confirmBtn" style="padding:10px 20px;">Confirm Launch</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+  <script>
+    let selectedProblemId = null;
+    let allProblems = [];
+    let myTeamId = null;
+    let isUnlocked = false;
+    let globalUnlockTime = null;
+    let myRegistration = null;
+    let countdownIntervalId = null;
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', async () => {
+      await fetchTeamContext();
+      fetchProblems();
+    });
+
+    async function fetchTeamContext() {
+      try {
+        const res = await fetch('/api/team/me');
+        if (res.ok) {
+          const data = await res.json();
+          myTeamId = data.teamId;
+          isUnlocked = data.selectionUnlocked;
+          globalUnlockTime = data.unlockTime;
+          
+          // Update Header Welcome Message to use Team Name
+          document.getElementById('headerTeamName').innerText = data.teamName || data.teamId;
+          
+          updateLockUI();
+        } else {
+          window.location.href = '/team-login';
+        }
+      } catch (e) {
+        console.error('Failed to fetch team context');
+      }
+    }
+
+    // We removed the standard clock as per user request to show the Release Timer instead.
+
+    function updateLockUI() {
+      const lockMsg = document.getElementById('lockMessage');
+      const timerDisplay = document.getElementById('countdownTimer');
+      const lockText = document.getElementById('lockText');
+      const headerTimerContainer = document.getElementById('headerReleaseTimerContainer');
+      const headerTimerDisplay = document.getElementById('headerReleaseTimer');
+
+      clearInterval(countdownIntervalId);
+
+      // Re-evaluate unlock status based on specific timer
+      if (globalUnlockTime && Date.now() >= globalUnlockTime) {
+        isUnlocked = true;
+      }
+
+      if (!isUnlocked) {
+        lockMsg.style.display = 'block';
+        if (globalUnlockTime && Date.now() < globalUnlockTime) {
+          headerTimerContainer.style.display = 'flex'; // Show in header too
+          lockText.innerText = "⏳ Problem statements will be released in:";
+
+          const updateDisplays = () => {
+            const remaining = Math.max(0, globalUnlockTime - Date.now());
+            if (remaining === 0) {
+              clearInterval(countdownIntervalId);
+              isUnlocked = true;
+              updateLockUI(); 
+            } else {
+              const m = Math.floor(remaining / 60000);
+              const s = Math.floor((remaining % 60000) / 1000);
+              const timeStr = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+              timerDisplay.innerText = timeStr;
+              headerTimerDisplay.innerText = timeStr;
+            }
+          };
+
+          countdownIntervalId = setInterval(updateDisplays, 1000);
+          updateDisplays(); // Initial call
+        } else {
+          lockText.innerText = "⏳ Waiting for Admin to release problem statements...";
+          timerDisplay.innerText = "";
+          headerTimerContainer.style.display = 'none';
+        }
+      } else {
+        lockMsg.style.display = 'none';
+        timerDisplay.innerText = "";
+        headerTimerContainer.style.display = 'none';
+      }
+      renderProblems(allProblems); // re-render to hide/show buttons
+    }
+
+    async function fetchProblems() {
+      const problemContainer = document.getElementById('problemContainer');
+      const loadingState = document.getElementById('loadingState');
+      const selectionContainer = document.getElementById('mySelectionContainer');
+
+      try {
+        const res = await fetch('/api/problem-statements');
+        if (!res.ok) throw new Error('Network response was not ok');
+        allProblems = await res.json();
+
+        // Check if already registered
+        try {
+          const regRes = await fetch('/api/team/my-registration');
+          if (regRes.ok) {
+            myRegistration = await regRes.json();
+          } else {
+            myRegistration = null;
+          }
+        } catch (_) { 
+          myRegistration = null; 
+        }
+
+        loadingState.style.display = 'none';
+
+        if (myRegistration && myRegistration.problemStatementId) {
+            selectionContainer.style.display = 'block';
+            problemContainer.style.display = 'none';
+            renderMySelection(myRegistration.problemStatementId);
+        } else {
+            selectionContainer.style.display = 'none';
+            problemContainer.style.display = 'block';
+            renderProblems(allProblems);
+        }
+      } catch (e) {
+        loadingState.style.display = 'none';
+        problemContainer.style.display = 'block';
+        problemContainer.innerHTML = '<div style="text-align:center; color:#dc3545;">Failed to load data. Please check your link.</div>';
+      }
+    }
+
+    function renderMySelection(problemId) {
+        document.getElementById('problemContainer').style.display = 'none';
+        document.getElementById('lockMessage').style.display = 'none';
+        
+        const container = document.getElementById('mySelectionContainer');
+        const card = document.getElementById('mySelectionCard');
+        
+        const problem = allProblems.find(p => p.id === problemId);
+        if (!problem) return;
+
+        card.className = 'problem-card';
+        card.style.borderColor = '#28a745';
+        card.innerHTML = `
+          <h2><span style="color:#28a745">✓ Confirmed:</span> ${problem.id} - ${problem.title}</h2>
+          <div class="stats-badge" style="color:#28a745; background:rgba(40, 167, 69, 0.1); border-color: rgba(40, 167, 69, 0.2)">
+            ${problem.category || 'General'}
+          </div>
+          <p>${problem.description}</p>
+          <div style="margin-top:20px; padding-top:20px; border-top:1px solid #333">
+             <button class="hl-btn" onclick="downloadMissionText('${problem.id}')">💾 Download Mission Details</button>
+          </div>
+        `;
+        
+        container.style.display = 'block';
+    }
+
+    function downloadMissionText(problemId) {
+        const problem = allProblems.find(p => p.id === problemId);
+        if (!problem) return;
+        
+        const content = `MISSION DETAILS\n=================\n\nTarget: ${myRegistration.teamName} (${myRegistration.teamNumber})\nIdentifier: ${problem.id}\nTitle: ${problem.title}\nCategory: ${problem.category || 'General'}\n\nDESCRIPTION:\n${problem.description}`;
+        
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Mission_${problem.id}_${myRegistration.teamNumber}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function renderProblems(problems) {
+      const container = document.getElementById('problemContainer');
+      container.innerHTML = '';
+
+      if (problems.length === 0) {
+        container.innerHTML = '<div style="text-align:center;">No missions available.</div>';
+        return;
+      }
+
+      problems.forEach(p => {
+        const isFull = p.selectedCount >= p.maxSelections;
+        const card = document.createElement('div');
+        card.className = `problem-card ${isFull ? 'full' : ''}`;
+
+        card.innerHTML = `
+          <h2>${p.id}: ${p.title}</h2>
+          <div class="stats-badge">${p.category || 'General'} | ${p.selectedCount}/${p.maxSelections} Teams</div>
+          <p>${p.description}</p>
+          ${!isUnlocked ? '<button class="hl-btn" style="background:#555" disabled>Awaiting Release...</button>' : (!isFull ? `<button class="hl-btn" onclick="openRegModal('${p.id}')">Select Mission</button>` : '<button class="hl-btn" disabled>Mission Full</button>')}
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function openRegModal(id) {
+      selectedProblemId = id;
+      const problem = allProblems.find(p => p.id === id);
+      document.getElementById('modalProblemTitle').innerText = problem ? problem.title : id;
+      document.getElementById('modalTeamId').innerText = myTeamId || 'UNIDENTIFIED';
+      document.getElementById('regModal').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('regModal').classList.remove('active');
+    }
+
+    document.getElementById('finalRegisterForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!myTeamId) {
+        alert('Identity not synced. Please refresh or login again.');
+        return;
+      }
+      
+      const problemId = selectedProblemId;
+      const problemContainer = document.getElementById('problemContainer');
+      const selectionContainer = document.getElementById('mySelectionContainer');
+      const modal = document.getElementById('regModal');
+      
+      // --- OPTIMISTIC UI TRANSITION (INSTANT) ---
+      // We assume success and transition immediately
+      closeModal();
+      problemContainer.style.display = 'none';
+      selectionContainer.style.display = 'block';
+      renderMySelection(problemId);
+      
+      const data = { problemStatementId: problemId };
+
+      try {
+        const res = await fetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        const result = await res.json();
+
+        if (res.ok) {
+          // Confirm synchronization
+          myRegistration = result.registration;
+          // background sync for global state
+          fetchProblems();
+        } else {
+          // --- ROLLBACK ON ERROR ---
+          alert('Sync Failed: ' + (result.error || result.message));
+          myRegistration = null;
+          problemContainer.style.display = 'block';
+          selectionContainer.style.display = 'none';
+          fetchProblems(); // Full sync refresh
+        }
+      } catch (err) {
+        // --- ROLLBACK ON NETWORK ERROR ---
+        alert('Network out of sync. Please retry.');
+        problemContainer.style.display = 'block';
+        selectionContainer.style.display = 'none';
+        console.error(err);
+      }
+    });
+
+    document.getElementById('regModal').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) closeModal();
+    });
+
+    const eventSource = new EventSource('/api/events');
+    eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'registration' || data.type === 'deletion' || data.type === 'reset') {
+          fetchProblems();
+        } else if (data.type === 'lock_status') {
+          isUnlocked = data.data.selectionUnlocked;
+          globalUnlockTime = data.data.unlockTime;
+          updateLockUI();
+        }
+      } catch (e) { }
+    };
+  </script>
+  <form action="/api/team/logout" method="POST" style="position:fixed; bottom:20px; right:20px; z-index:9999;">
+    <button type="submit" class="hl-btn hl-btn-outline btn-sm"
+      style="padding:5px 10px; font-size:0.8rem; border-color:#444; color:#fff;">Logout Device</button>
+  </form>
+</body>
+
+</html>
