@@ -189,19 +189,26 @@ class MongoStore {
           result = null;
           return;
         }
-        // Fetch problem details for maxSelections within transaction
-        // Atomically reserve a slot by incrementing selectedCount only when below maxSelections
-        // Single atomic operation for maximum speed
+        // Atomically reserve a slot only if selectedCount < maxSelections
         const capacity = await ps.updateOne(
           {
             id: registration.problemStatementId,
             $expr: {
-              $lt: [ { $ifNull: ["$selectedCount", 0] }, { $literal: 1 } ] // Since we know maxSelections is 1 for this event
+              $lt: [
+                { $ifNull: ["$selectedCount", 0] },
+                { $ifNull: ["$maxSelections", 1] }
+              ]
             }
           },
           { $inc: { selectedCount: 1 } },
           { session }
         );
+
+        if (capacity.modifiedCount === 0) {
+          // No slot available or problem doesn't exist - abort transaction
+          result = null;
+          throw new Error('MISSION_FULL');
+        }
 
         // Create registration after capacity is reserved
         const record = {
@@ -229,6 +236,7 @@ class MongoStore {
       return result;
       
     } catch (error) {
+      if (error.message === 'MISSION_FULL') return null;
       // Handle duplicate key error specifically
       if (error.code === 11000) {
         // Duplicate key error - team number already exists
