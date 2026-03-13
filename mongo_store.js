@@ -14,20 +14,22 @@ class MongoStore {
     if (this.db) return;
     await this.client.connect();
     this.db = this.client.db(this.dbName);
-    const ps = this.db.collection(`${this.collectionPrefix}problem_statements`);
-    const regs = this.db.collection(`${this.collectionPrefix}registrations`);
-    const sessions = this.db.collection(`${this.collectionPrefix}sessions`);
-    const teams = this.db.collection(`${this.collectionPrefix}teams`);
-    this.collections = { ps, regs, sessions, teams };
+    this.collections = {
+      ps: this.db.collection(`${this.collectionPrefix}problem_statements`),
+      regs: this.db.collection(`${this.collectionPrefix}registrations`),
+      sessions: this.db.collection(`${this.collectionPrefix}sessions`),
+      teams: this.db.collection(`${this.collectionPrefix}teams`),
+      settings: this.db.collection(`${this.collectionPrefix}settings`)
+    };
     // indexes
-    await ps.createIndex({ id: 1 }, { unique: true });
-    await regs.createIndex({ teamNumber: 1 }, { unique: true });
-    await regs.createIndex({ problemStatementId: 1 });
-    await sessions.createIndex({ teamId: 1 }, { unique: true });
-    await sessions.createIndex({ createdAt: 1 }, { expireAfterSeconds: 86400 }); // 24h expiry
-    await teams.createIndex({ teamNumber: 1 }, { unique: true });
+    await this.collections.ps.createIndex({ id: 1 }, { unique: true });
+    await this.collections.regs.createIndex({ teamNumber: 1 }, { unique: true });
+    await this.collections.regs.createIndex({ problemStatementId: 1 });
+    await this.collections.sessions.createIndex({ teamId: 1 }, { unique: true });
+    await this.collections.sessions.createIndex({ createdAt: 1 }, { expireAfterSeconds: 86400 }); // 24h expiry
+    await this.collections.teams.createIndex({ teamNumber: 1 }, { unique: true });
     // seed defaults if empty: REMOVED to ensure data.json is the sole source of truth
-    const count = await ps.estimatedDocumentCount();
+    const count = await this.collections.ps.estimatedDocumentCount();
     if (count === 0) {
       console.log('Database empty. Waiting for JSON seed...');
     }
@@ -325,6 +327,20 @@ class MongoStore {
     if (!this.collections) await this.init();
     const rawId = String(teamId).trim().toUpperCase();
     await this.collections.sessions.deleteOne({ teamId: rawId });
+  }
+
+  async getSettings() {
+    if (!this.collections) await this.init();
+    return await this.collections.settings.findOne({ id: 'app_settings' });
+  }
+
+  async updateSettings(settings) {
+    if (!this.collections) await this.init();
+    await this.collections.settings.updateOne(
+      { id: 'app_settings' },
+      { $set: { ...settings, updatedAt: new Date() } },
+      { upsert: true }
+    );
   }
 }
 

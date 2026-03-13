@@ -420,11 +420,15 @@
             lockMsg.style.display = 'none';
             document.getElementById('headerTimerContainer').style.display = 'none';
             renderMySelection(myRegistration.problemStatementId);
-        } else {
+        } else if (isUnlocked && (!myRegistration || !myRegistration.problemStatementId)) {
             selectionContainer.style.display = 'none';
             problemContainer.style.display = 'block';
             renderProblems(allProblems);
-            updateLockUI(); // Ensure lock message shows if not registered
+            updateLockUI(); 
+        } else if (!isUnlocked && (!myRegistration || !myRegistration.problemStatementId)) {
+            selectionContainer.style.display = 'none';
+            problemContainer.style.display = 'block';
+            updateLockUI();
         }
       } catch (e) {
         console.error('Failed to fetch problems:', e);

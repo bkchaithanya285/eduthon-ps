@@ -222,9 +222,11 @@ async function getTeamAuth(req) {
   const [rawTeamId, token] = val.split(':');
   if (!rawTeamId || !token) return null;
 
-  // Normalize teamId to integer string (e.g. "EDUTHON-007" -> "7")
-  const teamNumRaw = String(rawTeamId.split('-')[1] || '').trim();
+  // Normalize teamId to canonical (e.g. "EDUTHON-007" -> "7")
+  const teamNumRaw = String(rawTeamId).includes('-') ? rawTeamId.split('-')[1] : rawTeamId;
   const teamId = String(parseInt(teamNumRaw, 10));
+
+  if (isNaN(parseInt(teamId, 10))) return null;
 
   // Verify against active session store (Persistent in MongoDB)
   if (db && typeof db.verifySession === 'function') {
@@ -234,7 +236,7 @@ async function getTeamAuth(req) {
     // Fallback to in-memory
     if (teamSessions.get(rawTeamId) !== token) return null;
   }
-  return teamId; // Returns the canonical "7"
+  return teamId;
 }
 
 // Team Authentication Middleware for API/Pages
@@ -251,20 +253,21 @@ app.get('/api/team/me', async (req, res) => {
   const teamId = await getTeamAuth(req);
   if (!teamId) return res.status(401).json({ error: 'Unauthorized' });
 
-  // Calculate if unlocked based on timer
   let isUnlocked = problemSelectionUnlocked;
   if (globalUnlockTime !== null && Date.now() >= globalUnlockTime) {
     isUnlocked = true;
   }
 
-  // look up team data using canonical teamId ("7")
   const teamData = teamNumberToTeam.get(teamId);
   const teamName = teamData ? teamData.teamName : `Team ${teamId}`;
   
-  console.log(`[IDENTITY-SYNC] Team: ${teamId} -> Found: ${!!teamData} -> Name: ${teamName}`);
-
-  // Fetch registration status in the same call to avoid lag
-  const myRegistration = await db.getRegistrationByTeam(teamId);
+  // Fetch registration status with extreme priority
+  let myRegistration = null;
+  try {
+    myRegistration = await db.getRegistrationByTeam(teamId);
+  } catch (err) {
+    console.warn('[DB-FAIL] Registration lookup failed:', err);
+  }
 
   res.json({
     teamId,
@@ -303,15 +306,18 @@ app.get('/api/team/my-registration', requireTeamAuth, async (req, res) => {
 });
 
 // Endpoint for Admin to set the release timer
-app.post('/api/admin/set-timer', requireAdmin, express.json(), (req, res) => {
+app.post('/api/admin/set-timer', requireAdmin, express.json(), async (req, res) => {
   const { unlockTimeMs } = req.body;
   if (unlockTimeMs) {
     globalUnlockTime = parseInt(unlockTimeMs);
-    problemSelectionUnlocked = false; // Relock until timer hits
+    problemSelectionUnlocked = false; 
   } else {
-    // If no time provided, just unlock immediately (manual override)
     globalUnlockTime = null;
     problemSelectionUnlocked = true;
+  }
+
+  if (db && typeof db.updateSettings === 'function') {
+    await db.updateSettings({ globalUnlockTime, problemSelectionUnlocked });
   }
 
   broadcastUpdate('lock_status', {
@@ -323,9 +329,14 @@ app.post('/api/admin/set-timer', requireAdmin, express.json(), (req, res) => {
 });
 
 // Deprecated: old toggle lock logic, keeping for fallback
-app.post('/api/admin/toggle-lock', requireAdmin, (req, res) => {
+app.post('/api/admin/toggle-lock', requireAdmin, async (req, res) => {
   problemSelectionUnlocked = !problemSelectionUnlocked;
-  if (!problemSelectionUnlocked) globalUnlockTime = null; // Clear timer if manually locked
+  if (!problemSelectionUnlocked) globalUnlockTime = null;
+  
+  if (db && typeof db.updateSettings === 'function') {
+    await db.updateSettings({ globalUnlockTime, problemSelectionUnlocked });
+  }
+
   broadcastUpdate('lock_status', { selectionUnlocked: problemSelectionUnlocked, unlockTime: globalUnlockTime });
   res.json({ selectionUnlocked: problemSelectionUnlocked, unlockTime: globalUnlockTime });
 });
@@ -333,7 +344,16 @@ app.post('/api/admin/toggle-lock', requireAdmin, (req, res) => {
 async function initializeDatabase() {
   if (!db) return;
   try {
-    await db.init();
+    // Load Persistent Settings
+    if (typeof db.getSettings === 'function') {
+      const settings = await db.getSettings();
+      if (settings) {
+        globalUnlockTime = settings.globalUnlockTime || null;
+        problemSelectionUnlocked = !!settings.problemSelectionUnlocked;
+        console.log(`[CONFIG] Loaded settings from DB: Unlocked=${problemSelectionUnlocked}, Time=${globalUnlockTime}`);
+      }
+    }
+
     const DATA_FILE = path.join(__dirname, 'data.json');
     if (fs.existsSync(DATA_FILE)) {
       const jsonData = JSON.parse(fs.readFileSync(DATA_FILE));
@@ -516,6 +536,10 @@ app.post('/api/admin/replace-with-data-file', requireAdmin, async (req, res) => 
     // Reset global lock state
     problemSelectionUnlocked = false;
     globalUnlockTime = null;
+    
+    if (db && typeof db.updateSettings === 'function') {
+      await db.updateSettings({ globalUnlockTime, problemSelectionUnlocked });
+    }
     
     const registrations = await db.getAllRegistrations();
     const problems = formatProblems(await db.getAllProblemStatements());
