@@ -1,9 +1,7 @@
-// Monolithic Node.js app serving API and frontend
 require('dotenv').config();
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
-const DatabaseManager = require('./json_store');
 const MongoStore = require('./mongo_store');
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -275,7 +273,9 @@ app.get('/api/team/me', async (req, res) => {
     unlockTime: globalUnlockTime,
     myRegistration: myRegistration ? {
       problemStatementId: myRegistration.problemStatementId,
-      problemTitle: myRegistration.problem_title
+      problemTitle: myRegistration.problem_title,
+      problemCategory: myRegistration.problem_category,
+      problemDifficulty: myRegistration.problem_difficulty
     } : null
   });
 });
@@ -451,34 +451,18 @@ app.post('/api/register', async (req, res) => {
     }
 
     // Success response is now minimal for speed
-    const ps = { id: registration.problemStatementId }; // Minimal placeholder for immediate response
-
-
-    // Broadcast updates asynchronously to avoid blocking the user's response
-    setImmediate(async () => {
-      try {
-        const updatedRegistrations = await db.getAllRegistrations();
-        const updatedProblems = formatProblems(await db.getAllProblemStatements());
-        broadcastUpdate('registration', { 
-          registrations: updatedRegistrations, 
-          problems: updatedProblems, 
-          newRegistration: { ...registration, problemStatement: ps } 
-        });
-      } catch (err) {
-        console.error('Async broadcast error:', err);
-      }
+    // Successful registration
+    broadcastUpdate('registration', { 
+      teamNumber, 
+      problemStatementId
     });
 
     res.json({
       success: true,
-      message: 'Registration successful!',
-      registration: { ...registration, problemStatement: ps },
-      problemStatement: {
-        id: ps.id,
-        title: ps.title,
-        category: ps.category,
-        difficulty: ps.difficulty,
-        newStatus: 'Confirmed'
+      message: 'MISSION SECURED!',
+      registration: {
+        teamNumber,
+        problemStatementId
       }
     });
   } catch (error) {

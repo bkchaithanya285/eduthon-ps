@@ -37,6 +37,14 @@ class MongoStore {
     try { await this.client.close(); } catch (_) {}
   }
 
+  _normalizeTeamId(rawId) {
+    if (!rawId) return '';
+    const s = String(rawId).trim();
+    const teamNumRaw = s.includes('-') ? s.split('-')[1] : s;
+    const parsed = parseInt(teamNumRaw, 10);
+    return isNaN(parsed) ? s : String(parsed);
+  }
+
   async getAllProblemStatements() {
     if (!this.collections) await this.init();
     const { ps, regs } = this.collections;
@@ -49,8 +57,7 @@ class MongoStore {
       idToCount.set(r.problemStatementId, (idToCount.get(r.problemStatementId) || 0) + 1);
     });
     return problems.map(p => {
-      const parsedMax = typeof p.maxSelections === 'number' ? p.maxSelections : parseInt(p.maxSelections || '0', 10) || 0;
-      const maxSel = Math.max(1, parsedMax);
+      const maxSel = Math.max(1, p.maxSelections || 0);
       const selected = idToCount.get(p.id) || 0;
       return {
         id: p.id,
@@ -75,14 +82,14 @@ class MongoStore {
   async createProblemStatement(problemStatement) {
     if (!this.collections) await this.init();
     const { ps } = this.collections;
-    const parsedMax = typeof problemStatement.maxSelections === 'number' ? problemStatement.maxSelections : parseInt(problemStatement.maxSelections || '0', 10) || 0;
-    const maxSel = Math.max(1, parsedMax);
+    const maxSel = Math.max(1, problemStatement.maxSelections || 0);
     try {
       await ps.insertOne({
         id: problemStatement.id,
         title: problemStatement.title,
         description: problemStatement.description,
         maxSelections: maxSel,
+        selectedCount: 0,
         category: problemStatement.category || null,
         difficulty: problemStatement.difficulty || null,
         technologies: Array.isArray(problemStatement.technologies) ? problemStatement.technologies : []
@@ -104,8 +111,7 @@ class MongoStore {
     if (updates.technologies !== undefined) doc.technologies = Array.isArray(updates.technologies) ? updates.technologies : [];
     if (updates.max_selections !== undefined || updates.maxSelections !== undefined) {
       const val = updates.max_selections ?? updates.maxSelections;
-      const parsed = typeof val === 'number' ? val : parseInt(val || '0', 10) || 0;
-      doc.maxSelections = Math.max(1, parsed);
+      doc.maxSelections = Math.max(1, parseInt(val) || 0);
     }
     const res = await ps.updateOne({ id }, { $set: doc });
     return { id, changes: res.modifiedCount };
@@ -120,11 +126,9 @@ class MongoStore {
   }
 
   async getEvaluationCriteria() {
-    // For MongoDB, we'll store evaluation criteria in a separate collection
     if (!this.collections) await this.init();
     const criteriaCollection = this.db.collection(`${this.collectionPrefix}evaluation_criteria`);
-    const criteria = await criteriaCollection.findOne({});
-    return criteria || null;
+    return await criteriaCollection.findOne({});
   }
 
   async getAllRegistrations() {
@@ -139,7 +143,7 @@ class MongoStore {
       team_number: r.teamNumber,
       team_name: r.teamName,
       team_leader: r.teamLeader,
-      problem_title: idToPs.get(r.problemStatementId)?.title || '',
+      problem_title: idToPs.get(r.problemStatementId)?.title || 'Unknown Mission',
       problem_category: idToPs.get(r.problemStatementId)?.category || null,
       problem_difficulty: idToPs.get(r.problemStatementId)?.difficulty || null,
       registration_date_time: r.registrationDateTime
@@ -163,10 +167,8 @@ class MongoStore {
   async getRegistrationByTeam(rawTeamId) {
     if (!this.collections) await this.init();
     const { regs, ps } = this.collections;
-    
-    // Normalize to integer-string (canonical ID)
-    const teamNumRaw = String(rawTeamId).includes('-') ? rawTeamId.split('-')[1] : rawTeamId;
-    const target = String(parseInt(teamNumRaw, 10));
+    const target = this._normalizeTeamId(rawTeamId);
+    if (!target) return null;
     
     const r = await regs.findOne({ teamNumber: target });
     if (!r) return null;
@@ -177,7 +179,7 @@ class MongoStore {
       team_name: r.teamName,
       team_leader: r.teamLeader,
       problemStatementId: r.problemStatementId, 
-      problem_title: problem?.title || '',
+      problem_title: problem?.title || 'Unknown Mission',
       problem_category: problem?.category || null,
       problem_difficulty: problem?.difficulty || null,
       registration_date_time: r.registrationDateTime
@@ -187,9 +189,7 @@ class MongoStore {
   async isTeamNumberTaken(teamNumber) {
     if (!this.collections) await this.init();
     const { regs } = this.collections;
-    // Canonical normalization
-    const teamNumRaw = String(teamNumber).includes('-') ? teamNumber.split('-')[1] : teamNumber;
-    const target = String(parseInt(teamNumRaw, 10));
+    const target = this._normalizeTeamId(teamNumber);
     const found = await regs.findOne({ teamNumber: target });
     return Boolean(found);
   }
@@ -197,9 +197,7 @@ class MongoStore {
   async getTeam(teamNumber) {
     if (!this.collections) await this.init();
     const { teams } = this.collections;
-    // Canonical normalization
-    const teamNumRaw = String(teamNumber).includes('-') ? teamNumber.split('-')[1] : teamNumber;
-    const target = String(parseInt(teamNumRaw, 10));
+    const target = this._normalizeTeamId(teamNumber);
     return await teams.findOne({ teamNumber: target });
   }
 
@@ -208,10 +206,11 @@ class MongoStore {
     if (!this.collections) await this.init();
     const { teams } = this.collections;
     for (const t of teamsArray) {
+      const target = this._normalizeTeamId(t.teamNumber);
       await teams.updateOne(
-        { teamNumber: String(t.teamNumber).trim() },
+        { teamNumber: target },
         { $set: { 
-          teamNumber: String(t.teamNumber).trim(),
+          teamNumber: target,
           password: t.password,
           teamName: t.teamName,
           teamLeader: t.teamLeader
@@ -225,46 +224,26 @@ class MongoStore {
   async createRegistrationAtomic(registration) {
     if (!this.collections) await this.init();
     const { regs, ps } = this.collections;
+    const target = this._normalizeTeamId(registration.teamNumber);
     
-    // Canonical normalization
-    const teamNumRaw = String(registration.teamNumber).includes('-') ? registration.teamNumber.split('-')[1] : registration.teamNumber;
-    const target = String(parseInt(teamNumRaw, 10));
-    
-    // Start a MongoDB session for transaction
     const session = this.client.startSession();
-    
     try {
       let result = null;
-      
       await session.withTransaction(async () => {
-        // Check if team number is already taken (within transaction)
         const exists = await regs.findOne({ teamNumber: target }, { session });
         if (exists) {
-          result = null;
-          return;
+          result = null; return;
         }
-        // Atomically reserve a slot only if selectedCount < maxSelections
         const capacity = await ps.updateOne(
           {
             id: registration.problemStatementId,
-            $expr: {
-              $lt: [
-                { $ifNull: ["$selectedCount", 0] },
-                { $ifNull: ["$maxSelections", 1] }
-              ]
-            }
+            $expr: { $lt: [ { $ifNull: ["$selectedCount", 0] }, { $ifNull: ["$maxSelections", 1] } ] }
           },
           { $inc: { selectedCount: 1 } },
           { session }
         );
-
-        if (capacity.modifiedCount === 0) {
-          // No slot available or problem doesn't exist - abort transaction
-          result = null;
-          throw new Error('MISSION_FULL');
-        }
-
-        // Create registration after capacity is reserved
+        if (capacity.modifiedCount === 0) throw new Error('MISSION_FULL');
+        
         const record = {
           teamNumber: target,
           teamName: registration.teamName,
@@ -272,30 +251,16 @@ class MongoStore {
           problemStatementId: registration.problemStatementId,
           registrationDateTime: new Date().toISOString()
         };
-        
-        try {
-          await regs.insertOne(record, { session });
-          result = { id: record.teamNumber, changes: 1 };
-        } catch (e) {
-          // Rollback capacity reservation on failure
-          try { await ps.updateOne({ id: registration.problemStatementId }, { $inc: { selectedCount: -1 } }, { session }); } catch (_) {}
-          throw e;
-        }
+        await regs.insertOne(record, { session });
+        result = { teamNumber: record.teamNumber, problemStatementId: record.problemStatementId };
       }, {
         readConcern: { level: 'majority' },
-        writeConcern: { w: 'majority' },
-        readPreference: 'primary'
+        writeConcern: { w: 'majority' }
       });
-      
       return result;
-      
     } catch (error) {
       if (error.message === 'MISSION_FULL') return null;
-      // Handle duplicate key error specifically
-      if (error.code === 11000) {
-        // Duplicate key error - team number already exists
-        return null;
-      }
+      if (error.code === 11000) return null;
       throw error;
     } finally {
       await session.endSession();
@@ -305,43 +270,33 @@ class MongoStore {
   async deleteRegistration(teamNumber) {
     if (!this.collections) await this.init();
     const { regs, ps } = this.collections;
-    const target = String(teamNumber).trim();
+    const target = this._normalizeTeamId(teamNumber);
     const reg = await regs.findOne({ teamNumber: target });
     const res = await regs.deleteOne({ teamNumber: target });
     if (res.deletedCount > 0 && reg && reg.problemStatementId) {
-      try { await ps.updateOne({ id: reg.problemStatementId }, { $inc: { selectedCount: -1 } }); } catch (_) {}
+      await ps.updateOne({ id: reg.problemStatementId }, { $inc: { selectedCount: -1 } }).catch(() => {});
     }
     return { changes: res.deletedCount };
   }
 
-   async importFromJSON(jsonData) {
+  async importFromJSON(jsonData) {
     if (!jsonData || !Array.isArray(jsonData.problemStatements)) return;
     if (!this.collections) await this.init();
     const { ps } = this.collections;
-    
     for (const psItem of jsonData.problemStatements) {
-      const parsedMax = typeof psItem.maxSelections === 'number' ? psItem.maxSelections : parseInt(psItem.maxSelections || '0', 10) || 1;
-      const maxSel = Math.max(1, parsedMax);
-      
+      const maxSel = Math.max(1, parseInt(psItem.maxSelections || psItem.max_selections) || 1);
       const doc = {
         id: psItem.id,
         title: psItem.title,
         description: psItem.description,
         maxSelections: maxSel,
-        selectedCount: 0,
         category: psItem.category || null,
         difficulty: psItem.difficulty || null,
         technologies: Array.isArray(psItem.technologies) ? psItem.technologies : []
       };
-
-      // Upsert to ensure we update existing problem definitions (like maxSelections)
-      await ps.updateOne(
-        { id: psItem.id },
-        { $set: doc },
-        { upsert: true }
-      );
+      await ps.updateOne({ id: psItem.id }, { $set: doc, $setOnInsert: { selectedCount: 0 } }, { upsert: true });
     }
-    console.log(`Synchronized ${jsonData.problemStatements.length} problem statements from JSON.`);
+    console.log(`Synchronized ${jsonData.problemStatements.length} missions.`);
   }
 
   async resetAll() {
@@ -350,28 +305,26 @@ class MongoStore {
     await regs.deleteMany({});
     await ps.deleteMany({});
     await sessions.deleteMany({});
-    await this.init();
     return true;
   }
 
   async saveSession(teamId, token) {
     if (!this.collections) await this.init();
-    await this.collections.sessions.updateOne(
-      { teamId },
-      { $set: { teamId, token, createdAt: new Date() } },
-      { upsert: true }
-    );
+    const rawId = String(teamId).trim().toUpperCase();
+    await this.collections.sessions.updateOne({ teamId: rawId }, { $set: { teamId: rawId, token, createdAt: new Date() } }, { upsert: true });
   }
 
   async verifySession(teamId, token) {
     if (!this.collections) await this.init();
-    const session = await this.collections.sessions.findOne({ teamId, token });
+    const rawId = String(teamId).trim().toUpperCase();
+    const session = await this.collections.sessions.findOne({ teamId: rawId, token });
     return !!session;
   }
 
   async clearSession(teamId) {
     if (!this.collections) await this.init();
-    await this.collections.sessions.deleteOne({ teamId });
+    const rawId = String(teamId).trim().toUpperCase();
+    await this.collections.sessions.deleteOne({ teamId: rawId });
   }
 }
 
