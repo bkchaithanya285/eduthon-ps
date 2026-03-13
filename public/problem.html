@@ -325,11 +325,20 @@
           myTeamId = data.teamId;
           isUnlocked = data.selectionUnlocked;
           globalUnlockTime = data.unlockTime;
+          myRegistration = data.myRegistration; // Use bundled registration to avoid lag
           
           // Update Header Welcome Message to use Team Name
           document.getElementById('headerTeamName').innerText = data.teamName || data.teamId;
           
-          updateLockUI();
+          // Immediate UI Lockdown Check
+          if (myRegistration && myRegistration.problemStatementId) {
+            document.getElementById('mySelectionContainer').style.display = 'block';
+            document.getElementById('problemContainer').style.display = 'none';
+            document.getElementById('lockMessage').style.display = 'none';
+            document.getElementById('headerReleaseTimerContainer').style.display = 'none';
+          } else {
+            updateLockUI();
+          }
         } else {
           window.location.href = '/team-login';
         }
@@ -401,18 +410,6 @@
         if (!res.ok) throw new Error('Network response was not ok');
         allProblems = await res.json();
 
-        // Check if already registered
-        try {
-          const regRes = await fetch('/api/team/my-registration');
-          if (regRes.ok) {
-            myRegistration = await regRes.json();
-          } else {
-            myRegistration = null;
-          }
-        } catch (_) { 
-          myRegistration = null; 
-        }
-
         loadingState.style.display = 'none';
 
         if (myRegistration && myRegistration.problemStatementId) {
@@ -438,14 +435,18 @@
         const container = document.getElementById('mySelectionContainer');
         const card = document.getElementById('mySelectionCard');
         
+        // If allProblems isn't loaded yet, show a preliminary card using the bundled title
         const problem = allProblems.find(p => p.id === problemId);
-        if (!problem) return;
-
+        
         card.className = 'problem-card';
         card.style.borderColor = '#28a745';
         card.style.background = 'linear-gradient(145deg, #111, #0a0a0a)';
         card.style.boxShadow = '0 0 30px rgba(40, 167, 69, 0.1)';
         
+        const titleToShow = problem ? `${problem.id}: ${problem.title}` : (myRegistration.problemTitle || 'Securing Details...');
+        const descToShow = problem ? problem.description : 'Loading finalized mission parameters...';
+        const catToShow = problem ? (problem.category || 'General Mission') : 'Mission Confirmed';
+
         card.innerHTML = `
           <div style="text-align:center; margin-bottom:30px;">
             <div style="font-size:3rem; margin-bottom:10px;">🛡️</div>
@@ -454,18 +455,18 @@
           </div>
 
           <div style="padding:25px; background:rgba(40,167,69,0.05); border:1px solid rgba(40,167,69,0.2); border-radius:12px; margin-bottom:20px;">
-            <h2 style="margin-top:0;">${problem.id}: ${problem.title}</h2>
+            <h2 style="margin-top:0;">${titleToShow}</h2>
             <div class="stats-badge" style="color:#28a745; background:rgba(40, 167, 69, 0.1); border-color: rgba(40,167,69,0.2); margin-bottom:15px;">
-              ${problem.category || 'General Mission'}
+              ${catToShow}
             </div>
-            <p style="color:#ccc; font-size:1.1rem; line-height:1.6;">${problem.description}</p>
+            <p style="color:#ccc; font-size:1.1rem; line-height:1.6;">${descToShow}</p>
           </div>
 
           <div style="display:flex; gap:15px; flex-wrap:wrap; justify-content:center; margin-top:30px; padding-top:20px; border-top:1px solid #333">
-             <button class="hl-btn" onclick="downloadMissionText('${problem.id}')">💾 Download Mission Doc</button>
+             <button class="hl-btn" ${!problem ? 'disabled' : ''} onclick="downloadMissionText('${problemId}')">💾 Download Mission Doc</button>
              <button class="hl-btn hl-btn-outline" style="border-color:#555; color:#888;" disabled> Mission Protocol Locked </button>
           </div>
-          <p style="text-align:center; font-size:0.8rem; color:#555; margin-top:15px;">Target Identity: ${myRegistration.teamName} (${myRegistration.teamNumber})</p>
+          <p style="text-align:center; font-size:0.8rem; color:#555; margin-top:15px;">Target Identity: ${myTeamId}</p>
         `;
         
         container.style.display = 'block';

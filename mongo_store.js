@@ -158,6 +158,26 @@ class MongoStore {
     }));
   }
 
+  async getRegistrationByTeam(teamNumber) {
+    if (!this.collections) await this.init();
+    const { regs, ps } = this.collections;
+    const target = String(teamNumber).trim();
+    const r = await regs.findOne({ teamNumber: target });
+    if (!r) return null;
+    
+    const problem = await ps.findOne({ id: r.problemStatementId });
+    return {
+      team_number: r.teamNumber,
+      team_name: r.teamName,
+      team_leader: r.teamLeader,
+      problemStatementId: r.problemStatementId, 
+      problem_title: problem?.title || '',
+      problem_category: problem?.category || null,
+      problem_difficulty: problem?.difficulty || null,
+      registration_date_time: r.registrationDateTime
+    };
+  }
+
   async isTeamNumberTaken(teamNumber) {
     if (!this.collections) await this.init();
     const { regs } = this.collections;

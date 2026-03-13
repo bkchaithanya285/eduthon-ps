@@ -255,11 +255,18 @@ app.get('/api/team/me', async (req, res) => {
   
   console.log(`[IDENTITY-SYNC] Req: ${teamId} -> Key: "${teamNum}" -> Found: ${!!teamData} -> Name: ${teamName}`);
 
+  // Fetch registration status in the same call to avoid lag
+  const myRegistration = await db.getRegistrationByTeam(teamId);
+
   res.json({
     teamId,
     teamName,
     selectionUnlocked: isUnlocked,
-    unlockTime: globalUnlockTime
+    unlockTime: globalUnlockTime,
+    myRegistration: myRegistration ? {
+      problemStatementId: myRegistration.problemStatementId,
+      problemTitle: myRegistration.problem_title
+    } : null
   });
 });
 
@@ -273,15 +280,11 @@ app.get('/api/team/my-registration', requireTeamAuth, async (req, res) => {
     const myReg = await db.getRegistrationByTeam(teamId);
     if (!myReg) return res.status(404).json({ error: 'Not registered' });
 
-    // Get problem statement ID
-    const allProblems = await db.getAllProblemStatements();
-    const problem = allProblems.find(p => p.title === myReg.problem_title);
-
     res.json({
       teamNumber: myReg.team_number,
       teamName: myReg.team_name,
       teamLeader: myReg.team_leader,
-      problemStatementId: problem ? problem.id : null
+      problemTitle: myReg.problem_title
     });
   } catch (e) {
     console.error('Error in my-registration:', e);
