@@ -17,13 +17,15 @@ class MongoStore {
     const ps = this.db.collection(`${this.collectionPrefix}problem_statements`);
     const regs = this.db.collection(`${this.collectionPrefix}registrations`);
     const sessions = this.db.collection(`${this.collectionPrefix}sessions`);
-    this.collections = { ps, regs, sessions };
+    const teams = this.db.collection(`${this.collectionPrefix}teams`);
+    this.collections = { ps, regs, sessions, teams };
     // indexes
     await ps.createIndex({ id: 1 }, { unique: true });
     await regs.createIndex({ teamNumber: 1 }, { unique: true });
     await regs.createIndex({ problemStatementId: 1 });
     await sessions.createIndex({ teamId: 1 }, { unique: true });
     await sessions.createIndex({ createdAt: 1 }, { expireAfterSeconds: 86400 }); // 24h expiry
+    await teams.createIndex({ teamNumber: 1 }, { unique: true });
     // seed defaults if empty: REMOVED to ensure data.json is the sole source of truth
     const count = await ps.estimatedDocumentCount();
     if (count === 0) {
@@ -184,6 +186,32 @@ class MongoStore {
     const target = String(teamNumber).trim();
     const found = await regs.findOne({ teamNumber: target });
     return Boolean(found);
+  }
+
+  async getTeam(teamNumber) {
+    if (!this.collections) await this.init();
+    const { teams } = this.collections;
+    const target = String(teamNumber).trim();
+    return await teams.findOne({ teamNumber: target });
+  }
+
+  async importTeams(teamsArray) {
+    if (!Array.isArray(teamsArray)) return;
+    if (!this.collections) await this.init();
+    const { teams } = this.collections;
+    for (const t of teamsArray) {
+      await teams.updateOne(
+        { teamNumber: String(t.teamNumber).trim() },
+        { $set: { 
+          teamNumber: String(t.teamNumber).trim(),
+          password: t.password,
+          teamName: t.teamName,
+          teamLeader: t.teamLeader
+        }},
+        { upsert: true }
+      );
+    }
+    console.log(`Synchronized ${teamsArray.length} teams to MongoDB.`);
   }
 
   async createRegistrationAtomic(registration) {

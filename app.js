@@ -160,7 +160,7 @@ function generateToken() {
   return require('crypto').randomBytes(16).toString('hex');
 }
 
-app.post('/api/team/login', express.urlencoded({ extended: false }), (req, res) => {
+app.post('/api/team/login', express.urlencoded({ extended: false }), async (req, res) => {
   const teamId = (req.body.teamId || '').trim().toUpperCase();
   const password = (req.body.password || '').trim();
   console.log(`Login attempt - TeamID: "${teamId}", Password: "${password}"`);
@@ -168,14 +168,26 @@ app.post('/api/team/login', express.urlencoded({ extended: false }), (req, res) 
   // Validate Team ID Format (EDUTHON-001 to EDUTHON-026)
   const teamRegex = /^EDUTHON-0(?:0[1-9]|1[0-9]|2[0-6])$/;
   if (!teamRegex.test(teamId)) {
-    console.log(`Failed regex for: ${teamId}`);
     return res.status(401).send('<!DOCTYPE html><html><body style="font-family:Arial;padding:20px"><h3 style="color:#c10016">Invalid Team ID</h3><p>Team ID must be between EDUTHON-001 and EDUTHON-026.</p><button onclick="window.history.back()">Back</button></body></html>');
   }
 
-  // Check against CSV data
   const teamNumRaw = String(teamId.split('-')[1] || '').trim();
   const teamNum = String(parseInt(teamNumRaw, 10)); // e.g. "007" -> "7"
-  const teamData = teamNumberToTeam.get(teamNum);
+  
+  // DB Primary Auth
+  let teamData = null;
+  try {
+    if (db && typeof db.getTeam === 'function') {
+      teamData = await db.getTeam(teamNum);
+    }
+  } catch (err) {
+    console.warn('[DB-FAIL] Falling back to CSV for auth:', err);
+  }
+
+  // Fallback to CSV
+  if (!teamData) {
+    teamData = teamNumberToTeam.get(teamNum);
+  }
 
   if (!teamData) {
     return res.status(401).send('<!DOCTYPE html><html><body style="font-family:Arial;padding:20px"><h3 style="color:#c10016">Unknown Identity</h3><p>Team record not found.</p><button onclick="window.history.back()">Back</button></body></html>');
@@ -185,17 +197,13 @@ app.post('/api/team/login', express.urlencoded({ extended: false }), (req, res) 
     return res.status(401).send('<!DOCTYPE html><html><body style="font-family:Arial;padding:20px"><h3 style="color:#c10016">Access denied</h3><p>Invalid password for this Team ID.</p><button onclick="window.history.back()">Back</button></body></html>');
   }
 
-  // Create new session token, effectively overriding any previous active session for this team
   const sessionToken = generateToken();
-  teamSessions.set(teamId, sessionToken);
-  
-  // Persist to DB if available
   if (db && typeof db.saveSession === 'function') {
-    db.saveSession(teamId, sessionToken).catch(err => console.error('Failed to persist session:', err));
+    await db.saveSession(teamId, sessionToken).catch(err => console.error('Failed to persist session:', err));
   }
-
-  // Set cookie for the team
-  res.setHeader('Set-Cookie', `team_auth=${teamId}:${sessionToken}; Path=/; HttpOnly; SameSite=Lax`);
+  
+  // Set 24h hardened cookie
+  res.setHeader('Set-Cookie', `team_auth=${teamId}:${sessionToken}; Path=/; HttpOnly; SameSite=Lax; Max-Age=86400`);
   return res.redirect('/problem');
 });
 
@@ -331,6 +339,10 @@ async function initializeDatabase() {
         await db.importFromJSON(jsonData);
       }
     }
+    // Sync Teams from CSV
+    if (teamNumberToTeam && teamNumberToTeam.size > 0 && typeof db.importTeams === 'function') {
+      await db.importTeams(Array.from(teamNumberToTeam.values()));
+    }
   } catch (error) {
     console.error('CRITICAL: Database initialization failed:', error);
     // On serverless, we don't exit; we let the next request retry or fail with status
@@ -342,27 +354,24 @@ async function initializeDatabase() {
 app.get('/api/problem-statements', async (req, res) => {
   try {
     res.set({ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' });
-    const statements = await db.getAllProblemStatements();
+    let statements;
+    try {
+      statements = await db.getAllProblemStatements();
+    } catch (dbErr) {
+      console.warn('[DB-FAIL] Fetching problems from JSON fallback');
+      const DATA_FILE = path.join(__dirname, 'data.json');
+      if (fs.existsSync(DATA_FILE)) {
+        const jsonData = JSON.parse(fs.readFileSync(DATA_FILE));
+        statements = jsonData.problemStatements || [];
+      } else {
+        throw dbErr;
+      }
+    }
     const formatted = formatProblems(statements).sort((a, b) => String(a.id).localeCompare(String(b.id)));
     res.json(formatted);
   } catch (error) {
-    console.error('Error fetching problem statements:', error);
-    // Do NOT fallback to JSON on Vercel to avoid EROFS; require Mongo to be healthy
-    if (!process.env.VERCEL) {
-      // Locally, allow a one-time JSON fallback
-      if (error && (error.name === 'MongoServerSelectionError' || String(error).includes('MongoServerSelectionError'))) {
-        try {
-          db = new DatabaseManager();
-          await db.init();
-          const statements = await db.getAllProblemStatements();
-          const formatted = formatProblems(statements).sort((a, b) => String(a.id).localeCompare(String(b.id)));
-          return res.json(formatted);
-        } catch (e2) {
-          console.error('Local fallback fetch failed:', e2);
-        }
-      }
-    }
-    res.status(500).json({ error: 'Failed to fetch problem statements' });
+    console.error('Error in /api/problem-statements:', error);
+    res.status(500).json({ error: 'Missions currently unavailable' });
   }
 });
 

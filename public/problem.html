@@ -371,10 +371,11 @@
 
           const updateDisplays = () => {
             const remaining = Math.max(0, globalUnlockTime - Date.now());
-            if (remaining === 0) {
+            if (remaining <= 0) {
               clearInterval(countdownIntervalId);
               isUnlocked = true;
               updateLockUI(); 
+              fetchProblems(); // Automatically release
             } else {
               const m = Math.floor(remaining / 60000);
               const s = Math.floor((remaining % 60000) / 1000);
@@ -564,24 +565,26 @@
           myRegistration = result.registration;
           // background sync for global state
           fetchProblems();
+          console.log('[SYNC-COMPLETE] Mission protocol secured.');
         } else {
           // --- ROLLBACK ON ERROR ---
+          const errorMsg = result.error || result.message || 'Unknown Protocol Error';
           if (res.status === 409) {
-            alert('⚠️ Mission Taken! Another team was slightly faster and has already claimed this mission protocol. \n\nPlease select a different mission from the list.');
+            alert('⚠️ MISSION PROTOCOL TAKEN! \n\nAnother team has already claimed this mission. Please select a different protocol immediately.');
           } else {
-            alert('Sync Failed: ' + (result.error || result.message));
+            alert('SYNC FAILURE: ' + errorMsg);
           }
           myRegistration = null;
           problemContainer.style.display = 'block';
           selectionContainer.style.display = 'none';
-          fetchProblems(); // Full sync refresh
+          fetchProblems(); // Re-sync state
         }
       } catch (err) {
         // --- ROLLBACK ON NETWORK ERROR ---
-        alert('Network out of sync. Please retry.');
+        alert('MISSION SYNC FAILED: Check your connectivity and refresh identity.');
         problemContainer.style.display = 'block';
         selectionContainer.style.display = 'none';
-        console.error(err);
+        console.error('[SYNC-FATAL]', err);
       }
     });
 
