@@ -160,10 +160,14 @@ class MongoStore {
     }));
   }
 
-  async getRegistrationByTeam(teamNumber) {
+  async getRegistrationByTeam(rawTeamId) {
     if (!this.collections) await this.init();
     const { regs, ps } = this.collections;
-    const target = String(teamNumber).trim();
+    
+    // Normalize to integer-string (canonical ID)
+    const teamNumRaw = String(rawTeamId).includes('-') ? rawTeamId.split('-')[1] : rawTeamId;
+    const target = String(parseInt(teamNumRaw, 10));
+    
     const r = await regs.findOne({ teamNumber: target });
     if (!r) return null;
     
@@ -183,7 +187,9 @@ class MongoStore {
   async isTeamNumberTaken(teamNumber) {
     if (!this.collections) await this.init();
     const { regs } = this.collections;
-    const target = String(teamNumber).trim();
+    // Canonical normalization
+    const teamNumRaw = String(teamNumber).includes('-') ? teamNumber.split('-')[1] : teamNumber;
+    const target = String(parseInt(teamNumRaw, 10));
     const found = await regs.findOne({ teamNumber: target });
     return Boolean(found);
   }
@@ -191,7 +197,9 @@ class MongoStore {
   async getTeam(teamNumber) {
     if (!this.collections) await this.init();
     const { teams } = this.collections;
-    const target = String(teamNumber).trim();
+    // Canonical normalization
+    const teamNumRaw = String(teamNumber).includes('-') ? teamNumber.split('-')[1] : teamNumber;
+    const target = String(parseInt(teamNumRaw, 10));
     return await teams.findOne({ teamNumber: target });
   }
 
@@ -217,7 +225,10 @@ class MongoStore {
   async createRegistrationAtomic(registration) {
     if (!this.collections) await this.init();
     const { regs, ps } = this.collections;
-    const target = String(registration.teamNumber).trim();
+    
+    // Canonical normalization
+    const teamNumRaw = String(registration.teamNumber).includes('-') ? registration.teamNumber.split('-')[1] : registration.teamNumber;
+    const target = String(parseInt(teamNumRaw, 10));
     
     // Start a MongoDB session for transaction
     const session = this.client.startSession();

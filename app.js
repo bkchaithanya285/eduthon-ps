@@ -221,18 +221,22 @@ async function getTeamAuth(req) {
   const match = cookieHeader.split(';').find(c => c.trim().startsWith('team_auth='));
   if (!match) return null;
   const val = match.split('=')[1] || '';
-  const [teamId, token] = val.split(':');
-  if (!teamId || !token) return null;
+  const [rawTeamId, token] = val.split(':');
+  if (!rawTeamId || !token) return null;
+
+  // Normalize teamId to integer string (e.g. "EDUTHON-007" -> "7")
+  const teamNumRaw = String(rawTeamId.split('-')[1] || '').trim();
+  const teamId = String(parseInt(teamNumRaw, 10));
 
   // Verify against active session store (Persistent in MongoDB)
   if (db && typeof db.verifySession === 'function') {
-    const isValid = await db.verifySession(teamId, token);
+    const isValid = await db.verifySession(rawTeamId, token);
     if (!isValid) return null;
   } else {
-    // Fallback to in-memory for local/legacy
-    if (teamSessions.get(teamId) !== token) return null;
+    // Fallback to in-memory
+    if (teamSessions.get(rawTeamId) !== token) return null;
   }
-  return teamId;
+  return teamId; // Returns the canonical "7"
 }
 
 // Team Authentication Middleware for API/Pages
@@ -255,13 +259,11 @@ app.get('/api/team/me', async (req, res) => {
     isUnlocked = true;
   }
 
-  // Look up team name from CSV map with resilient normalization
-  const teamNumRaw = String(teamId.split('-')[1] || '').trim();
-  const teamNum = String(parseInt(teamNumRaw, 10)); // e.g. "007" -> "7"
-  const teamData = teamNumberToTeam.get(teamNum);
-  const teamName = teamData ? teamData.teamName : teamId;
+  // look up team data using canonical teamId ("7")
+  const teamData = teamNumberToTeam.get(teamId);
+  const teamName = teamData ? teamData.teamName : `Team ${teamId}`;
   
-  console.log(`[IDENTITY-SYNC] Req: ${teamId} -> Key: "${teamNum}" -> Found: ${!!teamData} -> Name: ${teamName}`);
+  console.log(`[IDENTITY-SYNC] Team: ${teamId} -> Found: ${!!teamData} -> Name: ${teamName}`);
 
   // Fetch registration status in the same call to avoid lag
   const myRegistration = await db.getRegistrationByTeam(teamId);

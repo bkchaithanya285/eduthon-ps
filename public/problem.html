@@ -336,6 +336,7 @@
             document.getElementById('problemContainer').style.display = 'none';
             document.getElementById('lockMessage').style.display = 'none';
             document.getElementById('headerReleaseTimerContainer').style.display = 'none';
+            renderMySelection(myRegistration.problemStatementId);
           } else {
             updateLockUI();
           }
@@ -426,9 +427,22 @@
             updateLockUI(); // Ensure lock message shows if not registered
         }
       } catch (e) {
+        console.error('Failed to fetch problems:', e);
         loadingState.style.display = 'none';
-        problemContainer.style.display = 'block';
-        problemContainer.innerHTML = '<div style="text-align:center; color:#dc3545;">Failed to load data. Please refresh identity.</div>';
+        
+        // Only show fatal error if not already registered
+        if (!myRegistration || !myRegistration.problemStatementId) {
+          problemContainer.style.display = 'block';
+          problemContainer.innerHTML = '<div style="text-align:center; padding:50px; color:#dc3545;">' +
+            '<div style="font-size:3rem; margin-bottom:20px;">⚠️</div>' +
+            '<h3>IDENTITY SYNC OUT OF RANGE</h3>' +
+            '<p>The mission database is temporarily unresponsive. Please refresh your identity page.</p>' +
+            '<button class="hl-btn" onclick="window.location.reload()" style="margin-top:20px">Re-Sync Identity</button>' +
+            '</div>';
+        } else {
+            // Already registered - don't show error, just keep the Secured view
+            console.warn('Silent failure in fetchProblems for registered team.');
+        }
       }
     }
 
