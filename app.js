@@ -673,8 +673,10 @@ app.post('/api/admin/login', express.urlencoded({ extended: false }), (req, res)
   try {
     console.log('ADMIN LOGIN ATTEMPT', { receivedUser: user, receivedPassLength: pass.length, ADMIN_USER_set: !!ADMIN_USER, ADMIN_PASS_len: ADMIN_PASS ? ADMIN_PASS.length : 0 });
     try {
-      const logLine = `${new Date().toISOString()} LOGIN_ATTEMPT user=${user} pass_len=${pass.length} ADMIN_USER_set=${!!ADMIN_USER} ADMIN_PASS_len=${ADMIN_PASS ? ADMIN_PASS.length : 0}\n`;
-      fs.appendFileSync(path.join(__dirname, 'admin_debug.log'), logLine);
+      if (!process.env.VERCEL) {
+        const logLine = `${new Date().toISOString()} LOGIN_ATTEMPT user=${user} pass_len=${pass.length} ADMIN_USER_set=${!!ADMIN_USER} ADMIN_PASS_len=${ADMIN_PASS ? ADMIN_PASS.length : 0}\n`;
+        fs.appendFileSync(path.join(__dirname, 'admin_debug.log'), logLine);
+      }
     } catch (_) { }
   } catch (_) { }
   if (ADMIN_USER && ADMIN_PASS && user === ADMIN_USER && pass === ADMIN_PASS) {
