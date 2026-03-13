@@ -318,13 +318,6 @@
       document.getElementById('problemContainer').style.display = 'none';
       document.getElementById('loadingState').style.display = 'block';
       
-      // Immediate Bypass Check (Frontend Fallback)
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get('bypass') === 'eduthon_bypass_2024') {
-        bypassActive = true;
-        isUnlocked = true;
-      }
-
       await fetchTeamContext();
       fetchProblems();
     });

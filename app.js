@@ -14,13 +14,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 const TRUST_PROXY = process.env.VERCEL ? 1 : false;
 app.set('trust proxy', TRUST_PROXY);
  
-app.use((req, res, next) => {
-  if (req.query.bypass === 'eduthon_bypass_2024') {
-    console.log('[BYPASS-SET] Setting bypass cookie via query param');
-    res.setHeader('Set-Cookie', 'admin_bypass=1; Path=/; HttpOnly; SameSite=Lax; Max-Age=86400');
-  }
-  next();
-});
+// Bypass Middleware Removed (Restricted to Team 007 only)
 
 // Admin Login (cookie-based)
 const ADMIN_USER = process.env.ADMIN_USER || '';
@@ -219,6 +213,7 @@ app.post('/api/team/logout', async (req, res) => {
     await db.clearSession(teamId);
   }
   res.setHeader('Set-Cookie', 'team_auth=; Path=/; HttpOnly; Max-Age=0; SameSite=Lax');
+  res.setHeader('Set-Cookie', 'admin_bypass=; Path=/; HttpOnly; Max-Age=0; SameSite=Lax');
   return res.redirect('/');
 });
 
@@ -277,12 +272,10 @@ app.get('/api/team/me', async (req, res) => {
     console.warn('[DB-FAIL] Registration lookup failed:', err);
   }
 
-  const bypassCookie = (req.headers['cookie'] || '').split(';').some(c => c.trim().startsWith('admin_bypass=1'));
-  const bypassQuery = req.query.bypass === 'eduthon_bypass_2024';
-  // Team 7 (EDUTHON-007) gets automatic bypass
-  const isBypassActive = bypassCookie || bypassQuery || teamId === '7' || teamId === '007';
+  // Team 7 (EDUTHON-007) gets automatic bypass. General secret link removed.
+  const isBypassActive = teamId === '7' || teamId === '007';
 
-  console.log(`[BYPASS-CHECK] TeamID: "${teamId}", Cookie: ${bypassCookie}, Query: ${bypassQuery}, Result: ${isBypassActive}`);
+  console.log(`[BYPASS-CHECK] TeamID: "${teamId}", Result: ${isBypassActive}`);
 
   res.json({
     teamId,
@@ -445,7 +438,7 @@ app.post('/api/register', async (req, res) => {
     const teamId = await getTeamAuth(req);
     
     // Team 7 (EDUTHON-007) gets automatic bypass
-    const isBypassActive = bypassCookie || teamId === '7';
+    const isBypassActive = teamId === '7' || teamId === '007';
     
     if (!problemSelectionUnlocked && !isTimerUnlocked && !isBypassActive) {
       return res.status(403).json({ error: 'Selection Locked. Please wait for the mission clock to reach zero or for an Admin to initiate the launch.' });
@@ -707,10 +700,6 @@ app.get('/api/export/all/pdf', async (req, res) => {
 app.get('/', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'home.html')); });
 app.get('/team-login', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'team-login.html')); });
 app.get('/problem', requireTeamAuth, (req, res) => { 
-  const bypassCode = req.query.bypass;
-  if (bypassCode === 'eduthon_bypass_2024') {
-    res.setHeader('Set-Cookie', 'admin_bypass=1; Path=/; HttpOnly; SameSite=Lax; Max-Age=86400');
-  }
   res.sendFile(path.join(__dirname, 'public', 'problem.html')); 
 });
 app.get('/admin', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'admin.html')); });
