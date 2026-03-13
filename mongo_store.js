@@ -41,9 +41,10 @@ class MongoStore {
 
   _normalizeTeamId(rawId) {
     if (!rawId) return '';
-    const s = String(rawId).trim();
-    const teamNumRaw = s.includes('-') ? s.split('-')[1] : s;
-    const parsed = parseInt(teamNumRaw, 10);
+    let s = String(rawId).trim().toUpperCase();
+    // Remove "EDUTHON" and any following dash or space
+    s = s.replace(/^EDUTHON[- ]?/i, '');
+    const parsed = parseInt(s, 10);
     return isNaN(parsed) ? s : String(parsed);
   }
 

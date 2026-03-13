@@ -313,6 +313,10 @@
 
     // Initialize
     document.addEventListener('DOMContentLoaded', async () => {
+      // Hide container initially to avoid flicker
+      document.getElementById('problemContainer').style.display = 'none';
+      document.getElementById('loadingState').style.display = 'block';
+      
       await fetchTeamContext();
       fetchProblems();
     });
@@ -418,14 +422,14 @@
             selectionContainer.style.display = 'block';
             problemContainer.style.display = 'none';
             lockMsg.style.display = 'none';
-            document.getElementById('headerTimerContainer').style.display = 'none';
+            if (document.getElementById('headerReleaseTimerContainer')) document.getElementById('headerReleaseTimerContainer').style.display = 'none';
             renderMySelection(myRegistration.problemStatementId);
-        } else if (isUnlocked && (!myRegistration || !myRegistration.problemStatementId)) {
+        } else if (isUnlocked) {
             selectionContainer.style.display = 'none';
             problemContainer.style.display = 'block';
             renderProblems(allProblems);
             updateLockUI(); 
-        } else if (!isUnlocked && (!myRegistration || !myRegistration.problemStatementId)) {
+        } else {
             selectionContainer.style.display = 'none';
             problemContainer.style.display = 'block';
             updateLockUI();
