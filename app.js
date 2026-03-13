@@ -265,16 +265,15 @@ app.get('/api/team/me', async (req, res) => {
 
 // Endpoint to fetch current team's registration
 app.get('/api/team/my-registration', requireTeamAuth, async (req, res) => {
-  const teamId = getTeamAuth(req);
   try {
-    // Assuming teamId maps to teamNumber in DB
-    const registrations = await db.getAllRegistrations();
-    const myReg = registrations.find(r => r.team_number === teamId);
+    const teamId = await getTeamAuth(req);
+    if (!teamId) return res.status(401).json({ error: 'Unauthorized' });
+
+    // Optimized direct lookup
+    const myReg = await db.getRegistrationByTeam(teamId);
     if (!myReg) return res.status(404).json({ error: 'Not registered' });
 
-    // We need the problemStatementId, let's look up the problem based on title or write a custom query?
-    // Actually, mongo_store provides problem_title, but not ID in getAllRegistrations. 
-    // Best way is to find it from the DB directly since we have the ID.
+    // Get problem statement ID
     const allProblems = await db.getAllProblemStatements();
     const problem = allProblems.find(p => p.title === myReg.problem_title);
 
@@ -285,6 +284,7 @@ app.get('/api/team/my-registration', requireTeamAuth, async (req, res) => {
       problemStatementId: problem ? problem.id : null
     });
   } catch (e) {
+    console.error('Error in my-registration:', e);
     res.status(500).json({ error: 'Server error' });
   }
 });
