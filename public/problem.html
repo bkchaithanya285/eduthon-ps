@@ -310,6 +310,7 @@
     let globalUnlockTime = null;
     let myRegistration = null;
     let countdownIntervalId = null;
+    let bypassActive = false;
 
     // Initialize
     document.addEventListener('DOMContentLoaded', async () => {
@@ -317,6 +318,13 @@
       document.getElementById('problemContainer').style.display = 'none';
       document.getElementById('loadingState').style.display = 'block';
       
+      // Immediate Bypass Check (Frontend Fallback)
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('bypass') === 'eduthon_bypass_2024') {
+        bypassActive = true;
+        isUnlocked = true;
+      }
+
       await fetchTeamContext();
       fetchProblems();
     });
@@ -327,13 +335,22 @@
         if (res.ok) {
           const data = await res.json();
           myTeamId = data.teamId;
-          isUnlocked = data.selectionUnlocked;
+          // Only update isUnlocked and bypassActive from server if not already set by frontend bypass
+          if (!bypassActive) {
+            isUnlocked = data.selectionUnlocked;
+            bypassActive = data.bypassActive || false;
+          } else {
+            // Keep the frontend bypass state
+            isUnlocked = true;
+          }
           globalUnlockTime = data.unlockTime;
           myRegistration = data.myRegistration; // Use bundled registration to avoid lag
           
           // Update Header Welcome Message to use Team Name
           document.getElementById('headerTeamName').innerText = data.teamName || data.teamId;
           
+          console.log('[DEBUG] Team Context:', { myTeamId: data.teamId, isUnlocked, bypassActive, serverUnlocked: data.selectionUnlocked });
+
           // Immediate UI Lockdown Check
           if (myRegistration && myRegistration.problemStatementId) {
             document.getElementById('mySelectionContainer').style.display = 'block';
@@ -365,6 +382,10 @@
 
       // Re-evaluate unlock status based on specific timer
       if (globalUnlockTime && Date.now() >= globalUnlockTime) {
+        isUnlocked = true;
+      }
+
+      if (bypassActive) {
         isUnlocked = true;
       }
 
